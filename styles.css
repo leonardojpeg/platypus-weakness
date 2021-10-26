@@ -27,13 +27,14 @@ h1 {
 
 .texto {
     font-family: 'Montserrat Alternates', sans-serif;
-    width: 30%;
+    width: 420px;
     float: none;
       text-align: justify;
   text-justify: inter-word;
-  border: 15px 15px 15px 15px;
   margin-left: 50%;
   font-size: 18px;
+  letter-spacing: -1px;
+  word-spacing: 0.8em;
 }
 
 
