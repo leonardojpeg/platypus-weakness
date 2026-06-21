@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <style>
+    .sun { display: block; }
+    .moon { display: none; }
+    @media (prefers-color-scheme: dark) {
+      .sun { display: none; }
+      .moon { display: block; }
+    }
+  </style>
+  <!-- Sun (light mode) -->
+  <g class="sun">
+    <circle cx="50" cy="50" r="16" fill="#1a1815"/>
+    <circle cx="44" cy="47" r="2" fill="#fdf5ee"/>
+    <circle cx="56" cy="47" r="2" fill="#fdf5ee"/>
+    <path d="M44 56 C46 59 54 59 56 56" stroke="#fdf5ee" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+    <path d="M50 30 L48 18 L50 12 L52 18 Z" fill="#1a1815"/>
+    <path d="M50 70 L48 82 L50 88 L52 82 Z" fill="#1a1815"/>
+    <path d="M30 50 L18 48 L12 50 L18 52 Z" fill="#1a1815"/>
+    <path d="M70 50 L82 48 L88 50 L82 52 Z" fill="#1a1815"/>
+    <path d="M36 36 L27 27 L24 24 L30 28 Z" fill="#1a1815"/>
+    <path d="M64 36 L73 27 L76 24 L70 28 Z" fill="#1a1815"/>
+    <path d="M36 64 L27 73 L24 76 L30 72 Z" fill="#1a1815"/>
+    <path d="M64 64 L73 73 L76 76 L70 72 Z" fill="#1a1815"/>
+    <path d="M50 5 C49 8 51 8 50 11" stroke="#1a1815" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+    <path d="M50 89 C49 92 51 92 50 95" stroke="#1a1815" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+    <path d="M5 50 C8 49 8 51 11 50" stroke="#1a1815" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+    <path d="M89 50 C92 49 92 51 95 50" stroke="#1a1815" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+    <circle cx="50" cy="50" r="22" stroke="#1a1815" stroke-width="0.8" fill="none" opacity="0.2"/>
+  </g>
+  <!-- Moon (dark mode) -->
+  <g class="moon">
+    <circle cx="50" cy="50" r="16" fill="#ede9e3"/>
+    <circle cx="58" cy="44" r="10" fill="#141311"/>
+    <circle cx="44" cy="50" r="2" fill="#141311"/>
+    <circle cx="52" cy="53" r="2" fill="#141311"/>
+    <path d="M43 57 C45 59 51 59 53 57" stroke="#141311" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+    <path d="M50 30 L48 18 L50 12 L52 18 Z" fill="#ede9e3"/>
+    <path d="M50 70 L48 82 L50 88 L52 82 Z" fill="#ede9e3"/>
+    <path d="M30 50 L18 48 L12 50 L18 52 Z" fill="#ede9e3"/>
+    <path d="M70 50 L82 48 L88 50 L82 52 Z" fill="#ede9e3"/>
+    <path d="M36 36 L27 27 L24 24 L30 28 Z" fill="#ede9e3"/>
+    <path d="M64 36 L73 27 L76 24 L70 28 Z" fill="#ede9e3"/>
+    <path d="M36 64 L27 73 L24 76 L30 72 Z" fill="#ede9e3"/>
+    <path d="M64 64 L73 73 L76 76 L70 72 Z" fill="#ede9e3"/>
+    <path d="M50 5 C49 8 51 8 50 11" stroke="#ede9e3" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+    <path d="M50 89 C49 92 51 92 50 95" stroke="#ede9e3" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+    <path d="M5 50 C8 49 8 51 11 50" stroke="#ede9e3" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+    <path d="M89 50 C92 49 92 51 95 50" stroke="#ede9e3" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+    <circle cx="50" cy="50" r="22" stroke="#ede9e3" stroke-width="0.8" fill="none" opacity="0.2"/>
+  </g>
+</svg>

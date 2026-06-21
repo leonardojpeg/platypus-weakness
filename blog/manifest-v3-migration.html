@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Migrating a monolithic userscript to modular Manifest V3 — architecture decisions and challenges.">
+  <title>Migrating to Manifest V3 — Leonardo Cuevas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../app.css">
+</head>
+<body>
+  <!-- Custom Cursor -->
+  <div class="cursor-dot" aria-hidden="true"></div>
+  <div class="cursor-ring" aria-hidden="true"></div>
+
+  <!-- Scroll Progress -->
+  <div class="scroll-progress" aria-hidden="true"></div>
+
+  <nav id="nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <button class="theme-toggle" aria-label="Toggle dark mode">
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="9" cy="9" r="4" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="9" y1="0.5" x2="9" y2="3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="9" y1="15" x2="9" y2="17.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="0.5" y1="9" x2="3" y2="9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="15" y1="9" x2="17.5" y2="9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="2.9" y1="2.9" x2="4.7" y2="4.7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="13.3" y1="13.3" x2="15.1" y2="15.1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="2.9" y1="15.1" x2="4.7" y2="13.3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="13.3" y1="4.7" x2="15.1" y2="2.9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15.5 10.5a7 7 0 0 1-8-8 7 7 0 1 0 8 8Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <ul class="nav-links">
+        <li><a href="../index.html#writing">Writing</a></li>
+        <li><a href="../index.html#experience">Experience</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <article class="page-detail blog-post">
+    <div class="section-container">
+      <a href="../index.html#writing" class="back-link">← Back</a>
+      <div class="post-header">
+        <span class="blog-tag">Architecture</span>
+        <h1>Migrating a monolithic userscript to modular Manifest V3</h1>
+      </div>
+
+      <div class="post-body">
+        <p class="post-intro">I inherited a userscript nobody could maintain. I rebuilt it as a browser extension.</p>
+
+        <h2>What it does</h2>
+        <p>Large operations team. They investigate cases across multiple internal platforms — ticketing, fulfillment, compliance. A single case touches several tools. The extension eliminates the manual glue between them: auto-populates fields, pulls data inline, flags errors before submit, handles bulk actions.</p>
+        <p>Throughput improved significantly. The extension didn't just speed things up — it made the current process (more complex than when the team was smaller) viable at the scale it runs today.</p>
+
+        <h2>What I inherited</h2>
+        <p>One file. Loaded on every page. Global state. CSS built as string arrays. Version checking done by polling an external source and comparing values to the running version.</p>
+        <p>The author left. I had to decide whether to keep patching it or start over.</p>
+
+        <div class="comparison-grid">
+          <div class="comparison-col comparison-bad">
+            <h3>Inherited</h3>
+            <ul>
+              <li>1 file, loaded on every URL</li>
+              <li>Shared global state</li>
+              <li>One crash = total failure</li>
+            </ul>
+          </div>
+          <div class="comparison-col comparison-good">
+            <h3>Rebuilt</h3>
+            <ul>
+              <li>40+ modules, per-domain loading</li>
+              <li>Isolated state per feature</li>
+              <li>Failures contained to their module</li>
+            </ul>
+          </div>
+        </div>
+
+        <h2>What I built</h2>
+
+        <div class="mermaid-wrap" id="arch-diagram">
+          <pre class="mermaid">
+flowchart TD
+    MAN[manifest.json]
+    BG[background]
+    CS[content-scripts]
+    DATA[data]
+    OTHER[rules + popup + options + styles]
+    SW[service-worker.js]
+    AUTH[auth-signing.js]
+    CORE[core - 9 files]
+    MODS[modules - 40 files]
+    MAIN[main.js]
+    SYNC[data-sync - 11 sub-modules]
+    CONF[8 config files]
+
+    MAN --> BG
+    MAN --> CS
+    MAN --> DATA
+    MAN --> OTHER
+    BG --> SW
+    BG --> AUTH
+    CS --> CORE
+    CS --> MODS
+    CS --> MAIN
+    MODS --> SYNC
+    DATA --> CONF
+          </pre>
+        </div>
+
+<pre><code>extension/
+├── background/
+│   ├── service-worker.js     # message router, API proxy
+│   └── auth-signing.js       # request signing for secured APIs
+├── content-scripts/
+│   ├── core/                 # 9 shared utilities
+│   ├── modules/              # 40 standalone feature modules
+│   │   └── data-sync/       # 11 sub-modules (complex feature)
+│   └── main.js              # feature guard + init
+├── data/                     # 8 config files
+├── rules/                    # declarativeNetRequest rules
+├── popup/                    # extension popup UI
+├── options/                  # settings page
+├── styles/                   # 5 CSS files
+└── libs/                     # 3 vendored libraries</code></pre>
+
+        <p>11 content script groups target specific domains. The primary tool loads 30+ modules + the 11-file data-sync sub-system. Others load 1–8 each. They can't affect each other.</p>
+
+        <h2>How modules talk</h2>
+
+        <div class="mermaid-wrap">
+          <pre class="mermaid">
+sequenceDiagram
+    participant M as Module
+    participant SW as Service Worker
+    participant API as External Service
+    M->>SW: request by name
+    SW->>API: authenticated call
+    alt ok
+        API-->>SW: data
+        SW-->>M: result
+    else auth expired
+        SW-->>M: re-authenticate
+    end
+          </pre>
+        </div>
+
+        <p>No module knows where data lives. They describe what they need. The service worker figures out the rest.</p>
+
+        <h2>Migration</h2>
+
+        <div class="mermaid-wrap">
+          <pre class="mermaid">
+flowchart LR
+    subgraph "Month 1"
+        M1A[Extension ships\n3 core modules]
+        M1B[Userscript still\nruns everything else]
+    end
+    subgraph "Month 2-3"
+        M2A[Features migrate\none at a time]
+        M2B[Both outputs diffed\non same inputs]
+    end
+    subgraph "Month 4"
+        M3A[Userscript retired]
+        M3B[Rollback removed]
+    end
+    M1A --> M2A --> M3A
+          </pre>
+        </div>
+
+        <p>Both ran in parallel. Features moved one at a time. Data outputs diffed against the old version until they matched.</p>
+
+        <h2>What I learned</h2>
+        <p>The original worked fine — until it didn't. One person's code that only one person understood, running on every page, holding everything in globals. When it broke, everything broke. When the author left, nobody could fix it.</p>
+        <p>Now someone else can open it and know where to look. When extension access was briefly disrupted across a large part of the organization, it was escalated as critical within hours. The tool had become infrastructure — and infrastructure needs to be ownable by more than one person.</p>
+      </div>
+    </div>
+  </article>
+
+  <script src="../app.js"></script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        background: '#f9ede3',
+        primaryColor: '#f9ede3',
+        primaryBorderColor: '#9e9590',
+        primaryTextColor: '#1a1815',
+        lineColor: '#9e9590',
+        edgeLabelBackground: '#f9ede3',
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '14px'
+      },
+      flowchart: { curve: 'basis', useMaxWidth: false, nodeSpacing: 30, rankSpacing: 50, padding: 15 }
+    });
+  </script>
+  <script>
+    (function() {
+      // Create overlay element once
+      var overlay = document.createElement('div');
+      overlay.id = 'diagram-overlay';
+      overlay.innerHTML = '<button id="diagram-overlay-close" aria-label="Close">✕ Close</button><div id="diagram-overlay-content"></div>';
+      document.body.appendChild(overlay);
+
+      var overlayContent = document.getElementById('diagram-overlay-content');
+      var closeBtn = document.getElementById('diagram-overlay-close');
+
+      function openOverlay(svgElement) {
+        var clone = svgElement.cloneNode(true);
+        clone.removeAttribute('style');
+        // Get the natural dimensions and set a viewBox so it scales
+        var w = svgElement.getAttribute('width') || svgElement.getBoundingClientRect().width;
+        var h = svgElement.getAttribute('height') || svgElement.getBoundingClientRect().height;
+        if (!clone.getAttribute('viewBox')) {
+          clone.setAttribute('viewBox', '0 0 ' + parseFloat(w) + ' ' + parseFloat(h));
+        }
+        // Now set it to fill the overlay while preserving aspect ratio
+        clone.setAttribute('width', '100%');
+        clone.setAttribute('height', '100%');
+        clone.style.display = 'block';
+        overlayContent.innerHTML = '';
+        overlayContent.appendChild(clone);
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeOverlay() {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+        overlayContent.innerHTML = '';
+      }
+
+      // Close on button, backdrop, content, or Escape
+      closeBtn.addEventListener('click', closeOverlay);
+      overlay.addEventListener('click', closeOverlay);
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeOverlay();
+      });
+
+      // Bind: clicking anywhere on a .mermaid-wrap expands it
+      setTimeout(function() {
+        document.querySelectorAll('.mermaid-wrap').forEach(function(wrap) {
+          wrap.style.cursor = 'pointer';
+          wrap.addEventListener('click', function(e) {
+            // Don't trigger if clicking the expand button itself (it also triggers this)
+            if (e.target.closest('#diagram-overlay')) return;
+            var svg = wrap.querySelector('svg');
+            if (svg) openOverlay(svg);
+          });
+        });
+      }, 2000);
+    })();
+  </script>
+</body>
+</html>

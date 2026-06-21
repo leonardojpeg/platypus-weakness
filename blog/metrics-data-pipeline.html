@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Metrics Data Pipeline — Auditing and rebuilding an inherited data extraction tool with silent bugs causing 18% data loss.">
+  <title>Metrics Data Pipeline — Leonardo Cuevas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../app.css">
+</head>
+<body>
+  <!-- Custom Cursor -->
+  <div class="cursor-dot" aria-hidden="true"></div>
+  <div class="cursor-ring" aria-hidden="true"></div>
+
+  <!-- Scroll Progress -->
+  <div class="scroll-progress" aria-hidden="true"></div>
+
+  <nav id="nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <button class="theme-toggle" aria-label="Toggle dark mode">
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="9" cy="9" r="4" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="9" y1="0.5" x2="9" y2="3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="9" y1="15" x2="9" y2="17.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="0.5" y1="9" x2="3" y2="9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="15" y1="9" x2="17.5" y2="9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="2.9" y1="2.9" x2="4.7" y2="4.7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="13.3" y1="13.3" x2="15.1" y2="15.1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="2.9" y1="15.1" x2="4.7" y2="13.3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="13.3" y1="4.7" x2="15.1" y2="2.9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15.5 10.5a7 7 0 0 1-8-8 7 7 0 1 0 8 8Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <ul class="nav-links">
+        <li><a href="../index.html#writing">Writing</a></li>
+        <li><a href="../index.html#experience">Experience</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <article class="page-detail blog-post">
+    <div class="section-container">
+      <a href="../index.html#writing" class="back-link">← Back</a>
+      <div class="post-header">
+        <span class="blog-tag">Data</span>
+        <h1>Metrics Data Pipeline</h1>
+      </div>
+
+      <div class="post-body">
+        <p class="post-intro">I inherited a data extraction tool nobody had validated. It was silently losing 18% of the data.</p>
+
+        <h2>What it does</h2>
+        <p>Large operations team across multiple regions. They track weekly performance — who handled what, how much, whether it was resolved. The numbers feed into resource planning, coaching, and reporting.</p>
+        <p>The pipeline pulls activity records from an API, applies transformation rules (filtering, deduplication, attribution), and produces structured reports in JSON, dashboard views, and CSV exports.</p>
+
+        <h2>What I inherited</h2>
+        <p>A script written by someone who'd left. It ran weekly, pulled data from an API, processed it, and produced a report. People filed those reports upstream. Nobody cross-checked the numbers.</p>
+        <p>I compared expected record counts against actual output. Consistent ~18% shortfall. Three compounding bugs:</p>
+        <ul>
+          <li>A dedup function grouped by a property that didn't exist on the objects — every key resolved to <code>undefined</code>, collapsing N entries into 1</li>
+          <li>A sort comparator returned booleans instead of numbers — non-deterministic ordering across engines</li>
+          <li>The API query filter was missing entire categories — some commented out during development, never restored</li>
+        </ul>
+        <p>On top of that, work done through automation posted under a shared account. The pipeline only checked individual authorship. All automated work was invisible.</p>
+
+        <h2>What I built</h2>
+
+        <div class="mermaid-wrap">
+          <pre class="mermaid">
+flowchart LR
+    A1["REST API"] --> B1["Filter"]
+    A2["Personnel API"] --> B1
+    B1 --> B2["Deduplicate"]
+    B2 --> B3["Attribute"]
+    B3 --> C1["JSON"]
+    B3 --> C2["Dashboard"]
+    B3 --> C3["CSV"]
+          </pre>
+        </div>
+
+        <p>Three stages. Extraction pulls from two independent sources — activity data and team membership. Transformation applies filtering, deduplication, and attribution. Output goes to multiple formats.</p>
+        <p>Extraction uses paginated async iteration. The team source is a filtered API call. Multiple query modes handle different metric types with different date semantics.</p>
+        <p>Transformation runs each record through a multi-step filter:</p>
+
+        <div class="mermaid-wrap">
+          <pre class="mermaid">
+flowchart TD
+    IN["Record"] --> F1{"Known\ncontributor?"}
+    F1 -->|No| X1["Drop"]
+    F1 -->|Yes| F2{"Noise?"}
+    F2 -->|Yes| X2["Drop"]
+    F2 -->|No| F3{"In range?"}
+    F3 -->|No| X3["Drop"]
+    F3 -->|Yes| F4{"Duplicate?"}
+    F4 -->|Yes| X4["Drop"]
+    F4 -->|No| OK["Keep"]
+          </pre>
+        </div>
+
+        <p>Attribution determines who gets credit. Direct when the author is identified. Falls back to the assigned worker when the record was produced by automation — the system posts under a shared account, so you need a different signal.</p>
+
+        <h2>The bugs</h2>
+        <p><strong>Silent data loss.</strong> The dedup grouped records by a field that didn't exist. Every iteration wrote to <code>acc[undefined]</code>. Only the last item survived — one record per entity regardless of activity. Fixed with Map-based dedup on a derived key.</p>
+        <p><strong>Non-deterministic sort.</strong> A boolean comparator where <code>sort()</code> expects a number. <code>false</code> coerces to <code>0</code> (equal), so items that should precede get treated as identical. Fixed with numeric subtraction.</p>
+        <p><strong>Missing categories.</strong> The query filter was incomplete. Valid records were invisible — commented out during development or never added. Reconciled against the source of truth.</p>
+
+        <h2>Migration</h2>
+        <p>Currently browser-based — someone triggers it manually each week. The primary data source is being deprecated, which forced a rethink. Designing a migration to a scheduled cloud function:</p>
+
+        <div class="mermaid-wrap">
+          <pre class="mermaid">
+flowchart TD
+    CRON["Schedule"] --> FN["Function"]
+    FN --> SRC1["Warehouse"]
+    FN --> SRC2["New API"]
+    SRC1 --> PROC["Transform"]
+    SRC2 --> PROC
+    PROC --> OUT1["Storage"]
+    PROC --> OUT2["Notify"]
+          </pre>
+        </div>
+
+        <p>Serverless function on a weekly cron. Dual data source — warehouse for metadata, new API for record detail. Versioned output in object storage. Notifications on completion or failure. Under $1/month.</p>
+
+        <h2>What I learned</h2>
+        <p>Nobody was checking the output. The tool produced numbers, the numbers went into reports, the reports got filed. It took comparing expected counts to actuals — a basic sanity check — to surface a problem that had been compounding for months.</p>
+        <p>Now every business rule is documented in a decision record. Each ambiguity was resolved with the people who own the metric definitions. The next person who opens this code knows what it's supposed to do and why.</p>
+      </div>
+    </div>
+  </article>
+
+  <script src="../app.js"></script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        background: '#f9ede3',
+        primaryColor: '#f9ede3',
+        primaryBorderColor: '#9e9590',
+        primaryTextColor: '#1a1815',
+        lineColor: '#9e9590',
+        edgeLabelBackground: '#f9ede3',
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '14px'
+      },
+      flowchart: { curve: 'basis', useMaxWidth: false, nodeSpacing: 30, rankSpacing: 40, padding: 10 }
+    });
+  </script>
+  <script>
+    (function() {
+      var overlay = document.createElement('div');
+      overlay.id = 'diagram-overlay';
+      overlay.innerHTML = '<button id="diagram-overlay-close" aria-label="Close">✕ Close</button><div id="diagram-overlay-content"></div>';
+      document.body.appendChild(overlay);
+
+      var overlayContent = document.getElementById('diagram-overlay-content');
+      var closeBtn = document.getElementById('diagram-overlay-close');
+
+      function openOverlay(svgElement) {
+        var clone = svgElement.cloneNode(true);
+        clone.removeAttribute('style');
+        var w = svgElement.getAttribute('width') || svgElement.getBoundingClientRect().width;
+        var h = svgElement.getAttribute('height') || svgElement.getBoundingClientRect().height;
+        if (!clone.getAttribute('viewBox')) {
+          clone.setAttribute('viewBox', '0 0 ' + parseFloat(w) + ' ' + parseFloat(h));
+        }
+        clone.setAttribute('width', '100%');
+        clone.setAttribute('height', '100%');
+        clone.style.display = 'block';
+        overlayContent.innerHTML = '';
+        overlayContent.appendChild(clone);
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeOverlay() {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+        overlayContent.innerHTML = '';
+      }
+
+      closeBtn.addEventListener('click', closeOverlay);
+      overlay.addEventListener('click', closeOverlay);
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeOverlay();
+      });
+
+      setTimeout(function() {
+        document.querySelectorAll('.mermaid-wrap').forEach(function(wrap) {
+          wrap.style.cursor = 'pointer';
+          wrap.addEventListener('click', function(e) {
+            if (e.target.closest('#diagram-overlay')) return;
+            var svg = wrap.querySelector('svg');
+            if (svg) openOverlay(svg);
+          });
+        });
+      }, 2000);
+    })();
+  </script>
+</body>
+</html>
