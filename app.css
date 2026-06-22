@@ -707,12 +707,12 @@ body.dark .icon-moon { display: block; }
   height: 60px;
   transform: translateY(-50%);
   color: var(--accent);
-  opacity: 0.4;
+  opacity: 0.8;
   transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
 }
 
 .blog-entry:hover .blog-shape {
-  opacity: 0.7;
+  opacity: 1;
   transform: translateY(-50%) rotate(5deg) scale(1.1);
 }
 
@@ -987,20 +987,18 @@ body.dark .icon-moon { display: block; }
    ======================================== */
 
 #contact {
-  padding: 3vh 0 6vh;
+  padding: 3vh var(--gutter) 6vh;
   position: relative;
   overflow: hidden;
 }
 
 .contact-statement {
   font-family: var(--font-display);
-  font-size: clamp(2.8rem, 7vw, 6rem);
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
   font-weight: 300;
   color: transparent;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-  padding-left: 12vw;
-  padding-right: var(--gutter);
+  line-height: 1.3;
+  letter-spacing: -0.02em;
   margin-bottom: 2.5rem;
   background: linear-gradient(
     135deg,
@@ -1039,25 +1037,19 @@ body.dark .icon-moon { display: block; }
 }
 
 .contact-block {
-  max-width: none;
-  margin: 0;
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 0;
-  align-items: stretch;
+  grid-template-columns: auto 1fr;
+  gap: 3rem;
+  align-items: end;
 }
 
-/* Badge — offset to left, overlaps */
+/* Badge */
 .badge-wrap {
   position: relative;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   gap: 1.5rem;
-  padding: 3rem;
-  padding-left: 12vw;
-  background: var(--bg-elevated);
-  border-right: 1px solid var(--border);
 }
 
 .badge-glow {
@@ -1081,7 +1073,7 @@ body.dark .icon-moon { display: block; }
   position: relative;
   width: 140px;
   border-radius: 12px;
-  overflow: visible;
+  overflow: hidden;
   z-index: 1;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
   transition: transform 0.6s var(--ease), box-shadow 0.6s var(--ease);
@@ -1096,10 +1088,18 @@ body.dark .icon-moon { display: block; }
   position: absolute;
   inset: 0;
   border-radius: 12px;
-  border: 1px solid var(--border-hover);
+  border: 1px solid var(--border);
   z-index: 2;
   pointer-events: none;
   transition: border-color 0.4s;
+}
+
+body.dark .badge-frame {
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+}
+
+body.dark .badge-frame::before {
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 .badge-wrap:hover .badge-frame {
@@ -1124,14 +1124,18 @@ body.dark .icon-moon { display: block; }
   z-index: 1;
   max-height: 200px;
   overflow: hidden;
+  border-radius: 8px;
   transition: transform 0.6s var(--ease);
+}
+
+body.dark .credential-card {
+  filter: brightness(0.85);
 }
 
 .credential-card:hover { transform: translateY(-4px); }
 
-/* Contact body — right side, offset upward */
+/* Contact body — right side */
 .contact-body {
-  padding: 3rem 4rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1327,20 +1331,14 @@ html {
   }
   .contact-block {
     grid-template-columns: 1fr;
-    gap: 0;
+    gap: 2rem;
   }
   .contact-statement {
-    padding-left: var(--gutter);
-    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
   }
   .badge-wrap {
-    padding-left: var(--gutter);
-    padding-right: var(--gutter);
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-  .contact-body {
-    padding: 2.5rem var(--gutter);
+    flex-direction: row;
+    gap: 1rem;
   }
 }
 
@@ -1389,8 +1387,6 @@ html {
 
   /* Contact mobile — stack fully */
   .contact-statement {
-    padding-left: var(--gutter);
-    padding-right: var(--gutter);
     font-size: clamp(1.5rem, 6vw, 2.2rem);
   }
   .contact-block {
@@ -1400,8 +1396,6 @@ html {
     flex-direction: row;
     gap: 1.2rem;
     align-items: center;
-    padding: 2rem var(--gutter);
-    padding-left: var(--gutter);
   }
   .badge-frame {
     width: 90px;
@@ -1413,9 +1407,6 @@ html {
     transform: scale(0.9);
     width: 140px;
     height: 140px;
-  }
-  .contact-body {
-    padding: 2rem var(--gutter);
   }
   .contact-links {
     flex-direction: row;
@@ -1767,4 +1758,30 @@ html {
   letter-spacing: 0.08em;
   max-width: var(--container);
   margin: 0 auto;
+}
+
+/* ========================================
+   ANGLERFISH EASTER EGG (dark mode only)
+   ======================================== */
+
+.anglerfish {
+  position: fixed;
+  width: 120px;
+  height: auto;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 1.5s ease;
+  transform: translate(-50%, -50%);
+}
+
+body.dark .anglerfish {
+  opacity: 0.6;
+}
+
+@keyframes anglerDrift {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  33% { transform: translate(-50%, -50%) rotate(-1deg); }
+  66% { transform: translate(-50%, -50%) rotate(0.5deg); }
+  100% { transform: translate(-50%, -50%) rotate(-0.5deg); }
 }

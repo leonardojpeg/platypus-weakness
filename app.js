@@ -179,12 +179,67 @@
       el.addEventListener('mouseleave', function () { setCursorState('default'); });
     });
 
+    // Click anywhere on blog entry to navigate
+    document.querySelectorAll('.blog-entry').forEach(function (entry) {
+      var link = entry.querySelector('h3 a');
+      if (link) {
+        entry.style.cursor = 'none';
+        entry.addEventListener('click', function (e) {
+          if (e.target.closest('a')) return; // let actual links work normally
+          link.click();
+        });
+      }
+    });
+
     // Tags
     var tagTargets = document.querySelectorAll('.tag');
     tagTargets.forEach(function (el) {
       el.addEventListener('mouseenter', function () { setCursorState('link'); });
       el.addEventListener('mouseleave', function () { setCursorState('default'); });
     });
+  }
+
+  // ========================================
+  // ANGLERFISH CURSOR FOLLOW (dark mode easter egg)
+  // ========================================
+  var anglerfish = document.querySelector('.anglerfish');
+  if (anglerfish && !isTouchDevice) {
+    var anglerX = window.innerWidth * 0.5;
+    var anglerY = window.innerHeight + 150;
+    var anglerTargetX = anglerX;
+    var anglerTargetY = anglerY;
+    var anglerFlipped = false;
+    var anglerTime = 0;
+
+    document.addEventListener('mousemove', function (e) {
+      anglerTargetX = e.clientX;
+      anglerTargetY = e.clientY;
+    });
+
+    function animateAngler() {
+      var prevX = anglerX;
+      anglerX += (anglerTargetX - anglerX) * 0.015;
+      anglerY += (anglerTargetY - anglerY) * 0.015;
+      anglerTime += 0.03;
+
+      // Swimming bob
+      var swimY = Math.sin(anglerTime) * 4;
+      var swimRotate = Math.sin(anglerTime * 0.7) * 2;
+
+      // Flip to face cursor direction
+      var dx = anglerX - prevX;
+      if (dx < -0.1) anglerFlipped = false;
+      if (dx > 0.1) anglerFlipped = true;
+
+      var scaleX = anglerFlipped ? 1 : -1;
+
+      anglerfish.style.left = anglerX + 'px';
+      anglerfish.style.top = (anglerY + swimY) + 'px';
+      anglerfish.style.transform = 'translate(-50%, -50%) scaleX(' + scaleX + ') rotate(' + swimRotate + 'deg)';
+
+      requestAnimationFrame(animateAngler);
+    }
+    animateAngler();
   }
 
   // ========================================
