@@ -233,7 +233,32 @@
               <span class="impact-tag" data-count="1">1 file → 40+ modules</span>
               <span class="impact-tag">Parallel rollout</span>
               <span class="impact-tag">Zero downtime</span>
-              <span class="impact-tag" data-count="67">+<span class="count-up">0</span>% throughput</span>
+              <span class="impact-tag" data-count="67">+<span class="count-up">67</span>% throughput</span>
+            </div>
+            <div class="case-arch">
+              <span class="arch-label">Architecture</span>
+              <svg class="case-diagram" viewBox="0 0 460 132" role="img" aria-label="Monolith userscript rebuilt into a Service Worker that proxies APIs and auth, fanning out to 40+ per-domain modules, an 11-submodule data-sync system, and 9 integrated tools.">
+                <defs>
+                  <marker id="dgA1" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto">
+                    <path class="dg-arrow" d="M0 0 L5 2.5 L0 5 Z"/>
+                  </marker>
+                </defs>
+                <rect class="dg-box" x="4" y="50" width="80" height="32" rx="3"/>
+                <text x="44" y="69" text-anchor="middle">Monolith</text>
+                <path class="dg-line" d="M86 66 H112" marker-end="url(#dgA1)"/>
+                <rect class="dg-accent" x="116" y="46" width="106" height="40" rx="3"/>
+                <text x="169" y="63" text-anchor="middle">Service Worker</text>
+                <text x="169" y="76" text-anchor="middle" class="dg-sub">API proxy · auth</text>
+                <path class="dg-line" d="M222 58 C258 58 264 26 298 26" marker-end="url(#dgA1)"/>
+                <path class="dg-line" d="M222 66 H298" marker-end="url(#dgA1)"/>
+                <path class="dg-line" d="M222 74 C258 74 264 106 298 106" marker-end="url(#dgA1)"/>
+                <rect class="dg-box" x="302" y="14" width="154" height="24" rx="3"/>
+                <text x="379" y="30" text-anchor="middle">40+ domain modules</text>
+                <rect class="dg-box" x="302" y="54" width="154" height="24" rx="3"/>
+                <text x="379" y="70" text-anchor="middle">data-sync · 11 subs</text>
+                <rect class="dg-box" x="302" y="94" width="154" height="24" rx="3"/>
+                <text x="379" y="110" text-anchor="middle">9 integrated tools</text>
+              </svg>
             </div>
           </div>
           <svg class="blog-shape" viewBox="0 0 80 80" aria-hidden="true">
@@ -255,9 +280,35 @@
             <h3><a href="blog/metrics-data-pipeline.html">Metrics Data Pipeline</a></h3>
             <p>Inherited a data extraction tool with silent bugs causing 18% data loss. Audited it line by line, fixed compounding issues in deduplication and sorting logic, and designed a migration from browser-based manual execution to scheduled cloud functions.</p>
             <div class="blog-impact">
-              <span class="impact-tag" data-count="18"><span class="count-up">0</span>% data loss fixed</span>
+              <span class="impact-tag" data-count="18"><span class="count-up">18</span>% data loss fixed</span>
               <span class="impact-tag">Multiple regions</span>
               <span class="impact-tag">Cloud migration</span>
+            </div>
+            <div class="case-arch">
+              <span class="arch-label">Pipeline</span>
+              <svg class="case-diagram" viewBox="0 0 460 96" role="img" aria-label="Data flows from REST API extraction, through a transform stage that deduplicates and sorts, into scheduled cloud functions, out to dashboards across 14 EU markets.">
+                <defs>
+                  <marker id="dgA2" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto">
+                    <path class="dg-arrow" d="M0 0 L5 2.5 L0 5 Z"/>
+                  </marker>
+                </defs>
+                <!-- data source (cylinder) -->
+                <path class="dg-icon" d="M14 34 a14 5 0 0 0 28 0 V58 a14 5 0 0 1 -28 0 Z"/>
+                <ellipse class="dg-icon" cx="28" cy="34" rx="14" ry="5"/>
+                <text x="28" y="78" text-anchor="middle" class="dg-sub">REST APIs</text>
+                <path class="dg-line" d="M46 46 H78" marker-end="url(#dgA2)"/>
+                <rect class="dg-box" x="82" y="30" width="96" height="34" rx="3"/>
+                <text x="130" y="46" text-anchor="middle">Transform</text>
+                <text x="130" y="58" text-anchor="middle" class="dg-sub">dedup + sort</text>
+                <path class="dg-line" d="M180 47 H210" marker-end="url(#dgA2)"/>
+                <rect class="dg-box" x="214" y="30" width="96" height="34" rx="3"/>
+                <text x="262" y="46" text-anchor="middle">Cloud functions</text>
+                <text x="262" y="58" text-anchor="middle" class="dg-sub">scheduled</text>
+                <path class="dg-line" d="M312 47 H342" marker-end="url(#dgA2)"/>
+                <rect class="dg-accent" x="346" y="30" width="108" height="34" rx="3"/>
+                <text x="400" y="46" text-anchor="middle">Dashboards</text>
+                <text x="400" y="58" text-anchor="middle" class="dg-sub">14 EU markets</text>
+              </svg>
             </div>
           </div>
           <svg class="blog-shape" viewBox="0 0 80 80" aria-hidden="true">
@@ -280,9 +331,37 @@
             <h3><a href="blog/qa-automation-platform.html">QA Automation Platform</a></h3>
             <p>Replaced manual quality audits with a structured scoring platform. Multiple evaluation categories, weighted deductions, real-time dashboards with trend tracking and per-person benchmarking.</p>
             <div class="blog-impact">
-              <span class="impact-tag" data-count="65"><span class="count-up">0</span> hrs/week saved</span>
+              <span class="impact-tag" data-count="65"><span class="count-up">65</span> hrs/week saved</span>
               <span class="impact-tag">Structured scoring</span>
               <span class="impact-tag">Real-time dashboards</span>
+            </div>
+            <div class="case-arch">
+              <span class="arch-label">Flow</span>
+              <svg class="case-diagram" viewBox="0 0 460 132" role="img" aria-label="Audit categories, weighted rules, and per-agent data feed a central weighted scoring engine, which outputs trend tracking and real-time dashboards.">
+                <defs>
+                  <marker id="dgA3" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto">
+                    <path class="dg-arrow" d="M0 0 L5 2.5 L0 5 Z"/>
+                  </marker>
+                </defs>
+                <rect class="dg-box" x="4" y="8" width="118" height="24" rx="3"/>
+                <text x="63" y="24" text-anchor="middle">Audit categories</text>
+                <rect class="dg-box" x="4" y="54" width="118" height="24" rx="3"/>
+                <text x="63" y="70" text-anchor="middle">Weighted rules</text>
+                <rect class="dg-box" x="4" y="100" width="118" height="24" rx="3"/>
+                <text x="63" y="116" text-anchor="middle">Per-agent data</text>
+                <path class="dg-line" d="M122 20 C168 20 176 60 208 64" marker-end="url(#dgA3)"/>
+                <path class="dg-line" d="M122 66 H208" marker-end="url(#dgA3)"/>
+                <path class="dg-line" d="M122 112 C168 112 176 72 208 68" marker-end="url(#dgA3)"/>
+                <rect class="dg-accent" x="212" y="48" width="98" height="36" rx="3"/>
+                <text x="261" y="64" text-anchor="middle">Scoring engine</text>
+                <text x="261" y="77" text-anchor="middle" class="dg-sub">weighted</text>
+                <path class="dg-line" d="M310 60 C338 60 344 34 374 34" marker-end="url(#dgA3)"/>
+                <path class="dg-line" d="M310 72 C338 72 344 98 374 98" marker-end="url(#dgA3)"/>
+                <rect class="dg-box" x="378" y="22" width="78" height="24" rx="3"/>
+                <text x="417" y="38" text-anchor="middle">Trends</text>
+                <rect class="dg-box" x="378" y="86" width="78" height="24" rx="3"/>
+                <text x="417" y="102" text-anchor="middle">Dashboards</text>
+              </svg>
             </div>
           </div>
           <svg class="blog-shape" viewBox="0 0 80 80" aria-hidden="true">
@@ -308,7 +387,8 @@
 
         <div class="exp-company">
           <h3>Amazon</h3>
-          <span class="exp-tenure">Full-time · 4 yrs 10 mos</span>
+          <span class="exp-tenure">Full-time · 4 yrs 10 mos · Barcelona</span>
+          <p class="exp-summary">Began in operations and investigations, building tools to automate my own workflows — which grew into a dedicated software engineering role.</p>
         </div>
 
         <article class="exp-role">
@@ -316,13 +396,12 @@
             <span class="exp-dates">Jan 2026 – Present</span>
           </div>
           <div class="exp-body">
-            <h4>Software Development Engineer I <span class="exp-note">(Interim SME)</span></h4>
+            <h4>Software Development Engineer <span class="exp-note">· Interim Subject Matter Expert</span></h4>
             <ul class="exp-highlights">
               <li>Design and maintain a multi-platform browser extension suite (40+ modules, 76+ daily users) integrating across 9 internal enterprise tools</li>
               <li>Own end-to-end metrics data pipeline: API extraction → transformation → dashboards across 14 EU markets</li>
               <li>Automated quality assurance workflows, reducing manual audit effort by ~65 hrs/week</li>
               <li>Develop automation workflows integrating AI models and MCP tools into internal processes</li>
-              <li>Built data extraction pipelines via REST APIs, real-time dashboards, and workflow orchestration</li>
               <li>Mentored a team member through the Manifest V3 migration, guiding architecture decisions and code review</li>
             </ul>
           </div>

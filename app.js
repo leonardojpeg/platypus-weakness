@@ -1115,17 +1115,22 @@
       var target = parent ? parseInt(parent.dataset.count, 10) : 0;
       if (!target) return;
 
-      gsap.to(el, {
-        innerText: target,
-        duration: 1.5,
-        ease: 'power2.out',
-        snap: { innerText: 1 },
-        scrollTrigger: {
-          trigger: parent,
-          start: 'top 85%',
-          toggleActions: 'play none none none'
+      // HTML holds the real final value (good for crawlers/no-JS); animate
+      // up from 0 only when scrolled into view.
+      gsap.fromTo(el,
+        { innerText: 0 },
+        {
+          innerText: target,
+          duration: 1.5,
+          ease: 'power2.out',
+          snap: { innerText: 1 },
+          scrollTrigger: {
+            trigger: parent,
+            start: 'top 85%',
+            toggleActions: 'play none none none'
+          }
         }
-      });
+      );
     });
 
     // Pin writing heading and animate blog entries
