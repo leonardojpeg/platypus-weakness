@@ -1138,10 +1138,11 @@ body.dark .credential-card {
   transition: transform 0.6s var(--ease);
 }
 
-/* Hide the Credly iframe's internal border by clipping it */
-.credential-card div {
-  margin: -2px;
-  padding: 2px;
+/* Hide the Credly iframe's internal border by stretching it past clip */
+.credential-card iframe {
+  margin: -4px;
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
 }
 
 body.dark .credential-card {
