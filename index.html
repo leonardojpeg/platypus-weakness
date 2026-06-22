@@ -14,20 +14,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-sun.svg" type="image/svg+xml">
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
+  <!-- Full-page particle field (sun/moon shapes) -->
+  <canvas class="particle-field particle-field--ambient" aria-hidden="true"></canvas>
+
   <!-- Page Loader -->
   <div class="page-loader" aria-hidden="true">
     <!-- Sun (light mode) -->
     <svg class="loader-mark loader-sun" viewBox="0 0 100 100" width="56" height="56" fill="none" xmlns="http://www.w3.org/2000/svg">
       <!-- Core -->
       <circle cx="50" cy="50" r="16" fill="currentColor"/>
-      <!-- Face -->
-      <circle cx="44" cy="47" r="2" fill="var(--bg)"/>
-      <circle cx="56" cy="47" r="2" fill="var(--bg)"/>
-      <path d="M44 56 C46 59 54 59 56 56" stroke="var(--bg)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
       <!-- Rays (ornate, solaire-style — alternating long/short, wavy) -->
       <path d="M50 30 L48 18 L50 12 L52 18 Z" fill="currentColor"/>
       <path d="M50 70 L48 82 L50 88 L52 82 Z" fill="currentColor"/>
@@ -51,10 +50,6 @@
       <!-- Core crescent -->
       <circle cx="50" cy="50" r="16" fill="currentColor"/>
       <circle cx="58" cy="44" r="10" fill="var(--bg)"/>
-      <!-- Face -->
-      <circle cx="44" cy="50" r="2" fill="var(--bg)"/>
-      <circle cx="52" cy="53" r="2" fill="var(--bg)"/>
-      <path d="M43 57 C45 59 51 59 53 57" stroke="var(--bg)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
       <!-- Rays (same ornate style as sun) -->
       <path d="M50 30 L48 18 L50 12 L52 18 Z" fill="currentColor"/>
       <path d="M50 70 L48 82 L50 88 L52 82 Z" fill="currentColor"/>
@@ -116,34 +111,47 @@
   <!-- Hero -->
   <header id="hero">
     <div class="hero-glow" aria-hidden="true"></div>
-    <canvas id="hero-particles" aria-hidden="true"></canvas>
+    <canvas id="hero-noise" aria-hidden="true"></canvas>
     <div class="hero-content">
       <div class="hero-text">
         <p class="hero-tagline">Software developer building <strong>production tools</strong> that eliminate manual work at <strong>scale.</strong> Based in Barcelona.</p>
         <div class="tags-wall">
-          <span class="tag">JavaScript / TypeScript</span>
-          <span class="tag">Chrome & Firefox Extensions</span>
-          <span class="tag">Manifest V3</span>
-          <span class="tag">Node.js</span>
-          <span class="tag">REST APIs</span>
-          <span class="tag">AWS (Lambda, S3, EventBridge)</span>
-          <span class="tag">HTML / CSS</span>
-          <span class="tag">Data Pipelines</span>
-          <span class="tag">Git</span>
+          <div class="tags-scroll">
+            <span class="tag">JavaScript / TypeScript</span>
+            <span class="tag">Chrome & Firefox Extensions</span>
+            <span class="tag">Manifest V3</span>
+            <span class="tag">Node.js</span>
+            <span class="tag">REST APIs</span>
+            <span class="tag">AWS (Lambda, S3, EventBridge)</span>
+            <span class="tag">HTML / CSS</span>
+            <span class="tag">Data Pipelines</span>
+            <span class="tag">Git</span>
+            <!-- Duplicated for seamless loop -->
+            <span class="tag">JavaScript / TypeScript</span>
+            <span class="tag">Chrome & Firefox Extensions</span>
+            <span class="tag">Manifest V3</span>
+            <span class="tag">Node.js</span>
+            <span class="tag">REST APIs</span>
+            <span class="tag">AWS (Lambda, S3, EventBridge)</span>
+            <span class="tag">HTML / CSS</span>
+            <span class="tag">Data Pipelines</span>
+            <span class="tag">Git</span>
+          </div>
         </div>
         <a href="#contact" class="hero-cta">Get in touch →</a>
       </div>
       <div class="hero-image">
+        <canvas id="hero-displacement" aria-hidden="true"></canvas>
         <img src="imgs/portal.jpg" alt="Abstract portal illustration" loading="eager">
       </div>
     </div>
   </header>
 
   <!-- Writing (lead section) -->
-  <section id="writing">
+  <section id="writing" class="skew-section" data-palette="warm">
     <div class="section-container">
       <h2 class="section-heading">Selected Writing</h2>
-      <div class="blog-list reveal-stagger">
+      <div class="blog-list">
 
         <article class="blog-entry">
           <div class="blog-meta">
@@ -151,15 +159,23 @@
             <span class="blog-date">June 2026</span>
           </div>
           <div class="blog-body">
-            <h3><a href="blog/manifest-v3-migration.html">Migrating a monolithic userscript to modular Manifest V3</a></h3>
+            <h3><a href="blog/manifest-v3-migration.html">From monolith to modular Manifest V3</a></h3>
             <p>Inherited a single-file userscript nobody could maintain. Rebuilt it as a 40+ module browser extension. How the architecture changed, how the migration ran, and what the tool does for an operations team.</p>
             <div class="blog-impact">
-              <span class="impact-tag">1 file → 40+ modules</span>
+              <span class="impact-tag" data-count="1">1 file → 40+ modules</span>
               <span class="impact-tag">Parallel rollout</span>
               <span class="impact-tag">Zero downtime</span>
-              <span class="impact-tag">+67% throughput</span>
+              <span class="impact-tag" data-count="67">+<span class="count-up">0</span>% throughput</span>
             </div>
           </div>
+          <svg class="blog-shape" viewBox="0 0 80 80" aria-hidden="true">
+            <rect x="10" y="10" width="60" height="60" rx="4" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
+            <rect x="18" y="18" width="44" height="44" rx="2" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.2"/>
+            <line x1="10" y1="30" x2="70" y2="30" stroke="currentColor" stroke-width="0.3" opacity="0.2"/>
+            <line x1="10" y1="50" x2="70" y2="50" stroke="currentColor" stroke-width="0.3" opacity="0.2"/>
+            <line x1="30" y1="10" x2="30" y2="70" stroke="currentColor" stroke-width="0.3" opacity="0.2"/>
+            <circle cx="40" cy="40" r="12" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.4"/>
+          </svg>
         </article>
 
         <article class="blog-entry">
@@ -171,11 +187,20 @@
             <h3><a href="blog/metrics-data-pipeline.html">Metrics Data Pipeline</a></h3>
             <p>Inherited a data extraction tool with silent bugs causing 18% data loss. Audited it line by line, fixed compounding issues in deduplication and sorting logic, and designed a migration from browser-based manual execution to scheduled cloud functions.</p>
             <div class="blog-impact">
-              <span class="impact-tag">18% data loss fixed</span>
+              <span class="impact-tag" data-count="18"><span class="count-up">0</span>% data loss fixed</span>
               <span class="impact-tag">Multiple regions</span>
               <span class="impact-tag">Cloud migration</span>
             </div>
           </div>
+          <svg class="blog-shape" viewBox="0 0 80 80" aria-hidden="true">
+            <path d="M10 60 L25 35 L40 45 L55 20 L70 30" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+            <circle cx="25" cy="35" r="2" fill="currentColor" opacity="0.3"/>
+            <circle cx="40" cy="45" r="2" fill="currentColor" opacity="0.3"/>
+            <circle cx="55" cy="20" r="2" fill="currentColor" opacity="0.3"/>
+            <circle cx="70" cy="30" r="2" fill="currentColor" opacity="0.3"/>
+            <path d="M10 65 L70 65" stroke="currentColor" stroke-width="0.3" opacity="0.2"/>
+            <path d="M10 65 L10 15" stroke="currentColor" stroke-width="0.3" opacity="0.2"/>
+          </svg>
         </article>
 
         <article class="blog-entry">
@@ -187,11 +212,20 @@
             <h3><a href="blog/qa-automation-platform.html">QA Automation Platform</a></h3>
             <p>Replaced manual quality audits with a structured scoring platform. Multiple evaluation categories, weighted deductions, real-time dashboards with trend tracking and per-person benchmarking.</p>
             <div class="blog-impact">
-              <span class="impact-tag">Dozens of hrs/week saved</span>
+              <span class="impact-tag" data-count="65"><span class="count-up">0</span> hrs/week saved</span>
               <span class="impact-tag">Structured scoring</span>
               <span class="impact-tag">Real-time dashboards</span>
             </div>
           </div>
+          <svg class="blog-shape" viewBox="0 0 80 80" aria-hidden="true">
+            <circle cx="40" cy="40" r="25" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
+            <circle cx="40" cy="40" r="18" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.2"/>
+            <path d="M40 15 L40 22" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+            <path d="M40 58 L40 65" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+            <path d="M15 40 L22 40" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+            <path d="M58 40 L65 40" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+            <path d="M40 22 L50 35 L40 40 Z" fill="currentColor" opacity="0.15"/>
+          </svg>
         </article>
 
       </div>
@@ -199,7 +233,7 @@
   </section>
 
   <!-- Experience -->
-  <section id="experience">
+  <section id="experience" class="skew-section" data-palette="cool">
     <div class="section-container">
       <h2 class="section-heading">Work Experience</h2>
       <div class="experience-list reveal-stagger">
@@ -211,10 +245,10 @@
 
         <article class="exp-role">
           <div class="exp-meta">
-            <span class="exp-dates">Jan 2025 – Present</span>
+            <span class="exp-dates">Jan 2026 – Present</span>
           </div>
           <div class="exp-body">
-            <h4>Seller Support Associate Sr., L3 (Software Development Focus)</h4>
+            <h4>Interim Subject Matter Expert: Software Development Engineer I, Business Analyst</h4>
             <ul class="exp-highlights">
               <li>Design and maintain a multi-platform browser extension suite (40+ modules, 76+ daily users) integrating across 9 internal enterprise tools</li>
               <li>Own end-to-end metrics data pipeline: API extraction → transformation → dashboards across 14 EU markets</li>
@@ -231,7 +265,7 @@
             <span class="exp-dates">Sep 2023 – Jan 2025</span>
           </div>
           <div class="exp-body">
-            <h4>Seller Support Associate Sr., L3 (Software Development Focus)</h4>
+            <h4>Seller Support Associate Sr., L3</h4>
             <p>Processed complex cross-border VAT compliance cases for EU sellers.</p>
           </div>
         </article>
@@ -321,26 +355,24 @@
   </section>
 
   <!-- Contact -->
-  <section id="contact">
-    <div class="section-container">
-      <p class="contact-statement">Let's build something that matters.</p>
-      <div class="contact-block reveal">
-        <div class="badge-wrap">
-          <div class="badge-glow" aria-hidden="true"></div>
-          <div class="badge-frame">
-            <img src="imgs/badge.jpg" alt="Leonardo Cuevas" class="contact-badge">
-          </div>
-          <div class="credential-card">
-            <div data-iframe-width="150" data-iframe-height="270" data-share-badge-id="c096e01d-2f53-46b0-b5d1-c4d61b706788" data-share-badge-host="https://www.credly.com"></div>
-          </div>
+  <section id="contact" data-palette="deep">
+    <p class="contact-statement">Let's build something that matters.</p>
+    <div class="contact-block reveal">
+      <div class="badge-wrap">
+        <div class="badge-glow" aria-hidden="true"></div>
+        <div class="badge-frame">
+          <img src="imgs/badge.jpg" alt="Leonardo Cuevas" class="contact-badge">
         </div>
-        <div class="contact-body">
-          <p class="contact-text">Open to software engineering roles — full-stack, tooling, infrastructure, whatever needs building. 4+ years shipping production systems at scale. Comfortable across the stack, from browser extensions to cloud deployments to bare-metal servers.</p>
-          <div class="contact-links">
-            <a href="https://github.com/leonardojpeg" target="_blank" rel="noopener noreferrer" class="contact-link">GitHub</a>
-            <a href="https://www.linkedin.com/in/leonardo-cuevas/" target="_blank" rel="noopener noreferrer" class="contact-link">LinkedIn</a>
-            <a href="mailto:citizenleonardo@gmail.com" class="contact-link">Email</a>
-          </div>
+        <div class="credential-card">
+          <div data-iframe-width="150" data-iframe-height="270" data-share-badge-id="c096e01d-2f53-46b0-b5d1-c4d61b706788" data-share-badge-host="https://www.credly.com"></div>
+        </div>
+      </div>
+      <div class="contact-body">
+        <p class="contact-text">Open to software engineering roles — full-stack, tooling, infrastructure, whatever needs building. 4+ years shipping production systems at scale. Comfortable across the stack, from browser extensions to cloud deployments to bare-metal servers.</p>
+        <div class="contact-links">
+          <a href="https://github.com/leonardojpeg" target="_blank" rel="noopener noreferrer" class="contact-link">GitHub</a>
+          <a href="https://www.linkedin.com/in/leonardo-cuevas/" target="_blank" rel="noopener noreferrer" class="contact-link">LinkedIn</a>
+          <a href="mailto:citizenleonardo@gmail.com" class="contact-link">Email</a>
         </div>
       </div>
     </div>
@@ -352,6 +384,10 @@
     </div>
   </footer>
 
+  <script src="https://unpkg.com/lenis@1/dist/lenis.min.js"></script>
+  <script src="https://unpkg.com/ogl@1/dist/ogl.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="app.js"></script>
   <script type="text/javascript" async src="//cdn.credly.com/assets/utilities/embed.js"></script>
 </body>
