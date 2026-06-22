@@ -538,6 +538,27 @@ body.dark .tag:hover {
   transform: translateY(-2px);
 }
 
+/* Row holding the primary CTA + the repo button */
+.hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+.hero-actions .hero-cta { margin-top: 0; }
+
+/* Secondary "ghost" button — links to the source repo */
+.hero-cta-ghost {
+  color: var(--text-muted);
+  border-color: var(--border-hover);
+}
+.hero-cta-ghost:hover {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--text);
+}
+
 .hero-image {
   position: relative;
   opacity: 0;

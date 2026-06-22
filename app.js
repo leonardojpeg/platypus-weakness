@@ -508,10 +508,10 @@
       }, 800 + i * 60);
     });
 
-    var cta = document.querySelector('.hero-cta');
-    if (cta) {
-      setTimeout(function () { cta.classList.add('visible'); }, 1200);
-    }
+    var ctas = document.querySelectorAll('.hero-cta');
+    ctas.forEach(function (cta, i) {
+      setTimeout(function () { cta.classList.add('visible'); }, 1200 + i * 120);
+    });
 
     var heroImg = document.querySelector('.hero-image');
     if (heroImg) {
