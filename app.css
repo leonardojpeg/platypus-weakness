@@ -289,8 +289,23 @@ body.dark .loader-moon {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1.5rem;
   padding: 0 var(--gutter);
 }
+
+/* Visible wordmark — restores the human-facing name in the skim */
+.nav-brand {
+  margin-right: auto;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  text-decoration: none;
+  cursor: none;
+  transition: color 0.3s var(--ease);
+}
+.nav-brand:hover { color: var(--accent); }
 
 .theme-toggle {
   background: none;
@@ -485,6 +500,19 @@ body.dark .icon-moon { display: block; }
   transform: translateY(-2px);
 }
 
+/* Dark mode: brighten the scrolling skill tags so they read against the deep water */
+body.dark .tag {
+  color: #b8d6d2;
+  border-color: rgba(127, 200, 210, 0.35);
+  background: rgba(18, 38, 42, 0.45);
+}
+
+body.dark .tag:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(212, 160, 90, 0.12);
+}
+
 .hero-cta {
   display: inline-block;
   margin-top: 2.5rem;
@@ -520,15 +548,7 @@ body.dark .icon-moon { display: block; }
 
 .hero-image.visible { opacity: 1; transform: translateY(0) scale(1); }
 
-#hero-displacement {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-  pointer-events: none;
-  border-radius: 4px;
-}
+
 
 .hero-image img {
   width: 100%;
@@ -545,18 +565,14 @@ body.dark .icon-moon { display: block; }
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
 }
 
-/* In dark mode, hide hero image and show the deep-sea shader */
+/* Hide the portal image in dark mode (deep-sea takes over) */
 body.dark .hero-image img {
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.8s var(--ease);
 }
 
-body.dark #hero-displacement {
-  z-index: 3;
-  opacity: 1;
-  border-radius: 12px;
-  background: #0a1428;
-}
+
 
 @keyframes heroFlip {
   0% { transform: rotate(0deg) scale(1); }
@@ -603,14 +619,7 @@ body.dark #hero-displacement {
   position: relative;
 }
 
-#writing .section-heading {
-  position: sticky;
-  top: 5rem;
-  z-index: 3;
-  background: var(--bg);
-  padding: 1rem 0;
-  margin-bottom: 1rem;
-}
+
 
 .section-container {
   max-width: var(--container);
@@ -969,6 +978,12 @@ body.dark #hero-displacement {
 
 .exp-body h4 a:hover { color: var(--accent); }
 
+.exp-note {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
 .exp-body p {
   font-size: 0.88rem;
   color: var(--text-muted);
@@ -1162,10 +1177,12 @@ body.dark .credential-card {
 }
 
 body.dark .credential-card {
-  filter: brightness(0.85);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: var(--bg);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  /* Light card so the Credly embed's dark-grey text stays readable */
+  background: #f4f1ea;
+  padding: 6px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
 .credential-card:hover { transform: translateY(-4px); }
@@ -1264,14 +1281,14 @@ body.dark .credential-card {
 body.dark {
   --bg: #141311;
   --bg-elevated: #1a1917;
-  --text: #ede9e3;
-  --text-muted: #9e9891;
-  --text-dim: #5c5856;
-  --accent: #d4a05a;
-  --accent-hover: #e0b06e;
-  --accent-glow: rgba(212, 160, 90, 0.1);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.2);
+  --text: #f0ece6;
+  --text-muted: #b3aca4;
+  --text-dim: #8a847d;
+  --accent: #e0aa62;
+  --accent-hover: #ecb872;
+  --accent-glow: rgba(224, 170, 98, 0.12);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(255, 255, 255, 0.25);
 }
 
 body.dark #nav.scrolled {
@@ -1797,8 +1814,347 @@ html {
 }
 
 /* ========================================
+   DEEP-SEA AMBIENT SCENE (dark mode only)
+   ======================================== */
+
+/* Backdrop layer — moody water behind all content */
+.deep-sea-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 2.5s ease;
+}
+
+body.dark .deep-sea-bg {
+  opacity: 1;
+}
+
+/* Overlay layer — creatures drift above content (like the anglerfish) */
+.deep-sea {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 2.5s ease;
+}
+
+body.dark .deep-sea {
+  opacity: 1;
+}
+
+/* Moody, darker water gradient with depth + caustic shimmer */
+.deep-sea-water {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -10%, rgba(50, 90, 110, 0.4) 0%, transparent 55%),
+    radial-gradient(ellipse 90% 70% at 20% 110%, rgba(25, 65, 70, 0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 60% at 85% 35%, rgba(75, 50, 115, 0.22) 0%, transparent 55%),
+    linear-gradient(180deg, #0b1a1f 0%, #081317 45%, #04080b 100%);
+  animation: waterShift 24s ease-in-out infinite;
+}
+
+/* Caustic light beams filtering down from above */
+.deep-sea-water::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(100deg, transparent 30%, rgba(120, 180, 200, 0.04) 45%, transparent 55%),
+    linear-gradient(75deg, transparent 40%, rgba(120, 180, 200, 0.03) 52%, transparent 60%);
+  animation: causticDrift 18s ease-in-out infinite alternate;
+}
+
+@keyframes waterShift {
+  0%, 100% { filter: hue-rotate(0deg) brightness(1); }
+  50% { filter: hue-rotate(-8deg) brightness(1.08); }
+}
+
+@keyframes causticDrift {
+  0% { transform: translateX(-3%) skewX(-2deg); opacity: 0.7; }
+  100% { transform: translateX(3%) skewX(2deg); opacity: 1; }
+}
+
+.deep-sea-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* === KELP / TENDRIL SILHOUETTES === */
+/* Horizontal kelp bed rooted (entrenched) across the full bottom edge,
+   sitting behind the anglerfish so it never covers it. */
+.kelp {
+  position: absolute;
+  bottom: 0;
+  z-index: 0;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 8px rgba(40, 120, 110, 0.25));
+}
+
+.kelp-bottom {
+  left: 0;
+  width: 100%;
+  height: 22vh;
+  transform-origin: bottom center;
+  animation: kelpBandSway 13s ease-in-out infinite;
+}
+
+/* Gentle side-to-side current — bottoms stay rooted, tops sway */
+@keyframes kelpBandSway {
+  0%, 100% { transform: skewX(0deg); }
+  50% { transform: skewX(2.5deg); }
+}
+
+/* Per-strand sway layered on top (where supported) for finer motion */
+.kelp-strand {
+  transform-origin: bottom center;
+  transform-box: fill-box;
+}
+
+.kelp-strand-a { animation: kelpSway 9s ease-in-out infinite; }
+.kelp-strand-b { animation: kelpSway 11s ease-in-out infinite 0.6s; }
+.kelp-strand-c { animation: kelpSway 13s ease-in-out infinite 1.2s; }
+.kelp-strand-d { animation: kelpSway 10s ease-in-out infinite reverse; }
+.kelp-strand-e { animation: kelpSway 12s ease-in-out infinite 0.8s reverse; }
+.kelp-strand-f { animation: kelpSway 14s ease-in-out infinite 1.5s reverse; }
+
+@keyframes kelpSway {
+  0%, 100% { transform: rotate(0deg) skewX(0deg) translateX(0); }
+  30% { transform: rotate(2.5deg) skewX(3deg) translateX(4px); }
+  60% { transform: rotate(-2deg) skewX(-2.5deg) translateX(-3px); }
+}
+
+/* === BIOLUMINESCENT ORGANISMS (6 orbs, unique orbits) === */
+.biolume {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform, opacity;
+  filter: blur(0.3px);
+}
+/* Soft pulsing outer halo (the glow an organism casts into the water) */
+.biolume::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 320%;
+  height: 320%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, currentColor 0%, transparent 70%);
+  opacity: 0.4;
+  animation: haloPulse 4s ease-in-out infinite;
+}
+/* Crisp bright core */
+.biolume::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 8px 2px currentColor, 0 0 3px 1px #ffffff inset;
+  animation: corePulse 3.2s ease-in-out infinite;
+}
+
+@keyframes haloPulse {
+  0%, 100% { opacity: 0.25; transform: translate(-50%, -50%) scale(0.85); }
+  50% { opacity: 0.55; transform: translate(-50%, -50%) scale(1.25); }
+}
+@keyframes corePulse {
+  0%, 100% { box-shadow: 0 0 6px 1px currentColor, 0 0 2px 1px #ffffff inset; }
+  50% { box-shadow: 0 0 12px 3px currentColor, 0 0 4px 1px #ffffff inset; }
+}
+
+/* Each orb: size, color, start position, unique orbit + twinkle */
+.biolume-1 {
+  width: 7px; height: 7px; top: 22%; left: 18%;
+  color: #6fd6e8;
+  background: radial-gradient(circle, #d6fbff 0%, #6fd6e8 45%, transparent 75%);
+  animation: orbit1 34s linear infinite, twinkle 5s ease-in-out infinite;
+}
+.biolume-2 {
+  width: 4px; height: 4px; top: 65%; left: 30%;
+  color: #b98ff0;
+  background: radial-gradient(circle, #f0e0ff 0%, #b98ff0 45%, transparent 75%);
+  animation: orbit2 28s linear infinite, twinkle 4s ease-in-out infinite 1s;
+}
+.biolume-3 {
+  width: 10px; height: 10px; top: 40%; left: 72%;
+  color: #5fe0c4;
+  background: radial-gradient(circle, #d6fff2 0%, #5fe0c4 45%, transparent 75%);
+  animation: orbit3 42s linear infinite, twinkle 6s ease-in-out infinite 0.5s;
+}
+.biolume-4 {
+  width: 3px; height: 3px; top: 78%; left: 60%;
+  color: #8fb8ff;
+  background: radial-gradient(circle, #e0ecff 0%, #8fb8ff 45%, transparent 75%);
+  animation: orbit4 24s linear infinite, twinkle 3.5s ease-in-out infinite 2s;
+}
+.biolume-5 {
+  width: 6px; height: 6px; top: 30%; left: 50%;
+  color: #e8a0d8;
+  background: radial-gradient(circle, #ffe0f5 0%, #e8a0d8 45%, transparent 75%);
+  animation: orbit5 38s linear infinite, twinkle 5.5s ease-in-out infinite 1.5s;
+}
+.biolume-6 {
+  width: 5px; height: 5px; top: 55%; left: 85%;
+  color: #6fd6e8;
+  background: radial-gradient(circle, #d6fbff 0%, #6fd6e8 45%, transparent 75%);
+  animation: orbit6 30s linear infinite, twinkle 4.5s ease-in-out infinite 0.8s;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.95; }
+}
+
+@keyframes orbit1 {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(60px, 40px); }
+  50%  { transform: translate(30px, 90px); }
+  75%  { transform: translate(-40px, 50px); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes orbit2 {
+  0%   { transform: translate(0, 0); }
+  33%  { transform: translate(-50px, -30px); }
+  66%  { transform: translate(40px, -60px); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes orbit3 {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-70px, 30px); }
+  50%  { transform: translate(-30px, -50px); }
+  75%  { transform: translate(50px, -20px); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes orbit4 {
+  0%   { transform: translate(0, 0); }
+  50%  { transform: translate(80px, -70px); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes orbit5 {
+  0%   { transform: translate(0, 0); }
+  30%  { transform: translate(45px, 55px); }
+  60%  { transform: translate(-55px, 35px); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes orbit6 {
+  0%   { transform: translate(0, 0); }
+  40%  { transform: translate(-60px, -40px); }
+  70%  { transform: translate(-20px, 60px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* === JELLYFISH === */
+.jellyfish {
+  position: absolute;
+  height: auto;
+  will-change: transform;
+}
+.jellyfish svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+.jellyfish-purple {
+  width: 82px;
+  top: 14%; left: 58%;
+  opacity: 0.82;
+}
+.jellyfish-teal {
+  width: 66px;
+  top: 26%; left: 74%;
+  opacity: 0.72;
+}
+/* Gentle in-place sway (ambient — visible whenever the deep-sea is active) */
+.jellyfish-purple > svg { animation: jellyDriftP 14s ease-in-out infinite; }
+.jellyfish-teal > svg { animation: jellyDriftT 16s ease-in-out infinite; }
+
+@keyframes jellyDriftP {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  33%  { transform: translate(4px, 5px) rotate(-3deg); }
+  66%  { transform: translate(-3px, 3px) rotate(2deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+@keyframes jellyDriftT {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  33%  { transform: translate(-4px, 4px) rotate(3deg); }
+  66%  { transform: translate(3px, 6px) rotate(-2deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* Bell pulse — fast contraction, slow relaxation (realistic propulsion) */
+.jelly-bell {
+  transform-origin: 50% 30%;
+  transform-box: fill-box;
+}
+.jellyfish-purple .jelly-bell { animation: bellPulse 3.4s ease-in-out infinite; }
+.jellyfish-teal .jelly-bell { animation: bellPulse 2.9s ease-in-out infinite 0.4s; }
+
+@keyframes bellPulse {
+  0%   { transform: scale(1, 1); }
+  15%  { transform: scale(1.12, 0.82); }
+  35%  { transform: scale(0.94, 1.12); }
+  100% { transform: scale(1, 1); }
+}
+
+/* Tendrils & oral arms trail behind the pulse */
+.jelly-tendrils {
+  transform-origin: 50% 0;
+  transform-box: fill-box;
+}
+.jellyfish-purple .jelly-tendrils { animation: tendrilTrail 3.4s ease-in-out infinite; }
+.jellyfish-teal .jelly-tendrils { animation: tendrilTrail 2.9s ease-in-out infinite 0.4s; }
+.jelly-arms {
+  transform-origin: 50% 0;
+  transform-box: fill-box;
+}
+.jellyfish-purple .jelly-arms { animation: armSway 3.4s ease-in-out infinite; }
+.jellyfish-teal .jelly-arms { animation: armSway 2.9s ease-in-out infinite 0.4s; }
+
+@keyframes tendrilTrail {
+  0%   { transform: scaleY(1) translateY(0); }
+  15%  { transform: scaleY(0.9) translateY(-3px); }
+  35%  { transform: scaleY(1.12) translateY(4px); }
+  100% { transform: scaleY(1) translateY(0); }
+}
+@keyframes armSway {
+  0%, 100% { transform: scaleY(1) skewX(0deg); }
+  35% { transform: scaleY(1.06) skewX(3deg); }
+  70% { transform: scaleY(0.97) skewX(-3deg); }
+}
+
+/* ========================================
    ANGLERFISH EASTER EGG (dark mode only)
    ======================================== */
+
+/* Submerge wash — plays when entering dark mode */
+.submerge-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at var(--sub-x, 50%) var(--sub-y, 50%),
+    rgba(30, 110, 160, 0) 0%,
+    rgba(18, 70, 120, 0.55) 35%,
+    rgba(6, 24, 50, 0.9) 100%);
+}
+
+.submerge-overlay.active {
+  animation: submergeWash 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes submergeWash {
+  0% { opacity: 0; transform: scale(1.15); }
+  20% { opacity: 1; }
+  55% { opacity: 0.85; }
+  100% { opacity: 0; transform: scale(1); }
+}
 
 .anglerfish {
   position: fixed;
@@ -1808,6 +2164,8 @@ html {
   pointer-events: none;
   z-index: 1;
   transform: translate(-50%, -50%);
+  /* Soft rim glow so the dark body reads against the near-black water */
+  filter: drop-shadow(0 0 14px rgba(150, 200, 210, 0.28)) drop-shadow(0 0 28px rgba(212, 160, 90, 0.12));
 }
 
 /* Lure pulsing glow - irregular organic rhythm */
@@ -1987,4 +2345,21 @@ html {
   33% { transform: translate(-50%, -50%) rotate(-1deg); }
   66% { transform: translate(-50%, -50%) rotate(0.5deg); }
   100% { transform: translate(-50%, -50%) rotate(-0.5deg); }
+}
+
+/* ========================================
+   SCREEN-READER-ONLY UTILITY
+   Visually hidden, but available to assistive
+   tech, search crawlers, and machine readers.
+   ======================================== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

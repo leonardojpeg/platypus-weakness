@@ -200,108 +200,271 @@
   }
 
   // ========================================
-  // ANGLERFISH CURSOR FOLLOW (dark mode easter egg)
+  // ANGLERFISH — hovers just left of the © copyright (dark mode easter egg)
   // ========================================
   var anglerfish = document.querySelector('.anglerfish');
-  if (anglerfish && !isTouchDevice) {
-    // Start from where the hero image is (emerges from the portal)
-    var heroImgRect = document.querySelector('.hero-image');
-    var anglerStartX = heroImgRect ? heroImgRect.getBoundingClientRect().left + heroImgRect.getBoundingClientRect().width / 2 : window.innerWidth * 0.7;
-    var anglerStartY = heroImgRect ? heroImgRect.getBoundingClientRect().top + heroImgRect.getBoundingClientRect().height / 2 : window.innerHeight * 0.5;
-    var anglerX = anglerStartX;
-    var anglerY = anglerStartY;
-    var anglerTargetX = anglerX;
-    var anglerTargetY = anglerY;
-    var anglerFlipped = false;
+  var anglerAnchor = document.querySelector('.site-footer p');
+  if (anglerfish && anglerAnchor && !isTouchDevice) {
+    var anglerKelp = document.querySelector('.kelp-bottom');
+    var kelpDepth = 0; // kelp fades in with the fish when the bottom is reached
+    if (anglerKelp) anglerKelp.style.opacity = '0'; // hidden until scrolled to
+    var anglerX = window.innerWidth * 0.5;
+    var anglerY = window.innerHeight + 200; // start below view, glides up
     var anglerTime = 0;
-    var anglerSpeed = 0;
-    var anglerLastMoveTime = Date.now();
     var anglerJawOpen = 0; // 0 = closed, 1 = fully open
     var anglerDepth = 0; // starts invisible, fades in slowly
+    var anglerPushX = 0, anglerPushY = 0; // impulse from click waves
+    var anglerHalfWidth = 88; // ~half the fish's visual width
 
-    // Get jaw element for animation
     var anglerJaw = anglerfish.querySelector('.angler-jaw');
 
-    document.addEventListener('mousemove', function (e) {
-      anglerTargetX = e.clientX;
-      anglerTargetY = e.clientY;
-      anglerLastMoveTime = Date.now();
-    });
+    // Expose a push so the click-wave can shove the fish away
+    anglerfish._push = function (fromX, fromY, force) {
+      var dxp = anglerX - fromX;
+      var dyp = anglerY - fromY;
+      var d = Math.sqrt(dxp * dxp + dyp * dyp) || 1;
+      anglerPushX += (dxp / d) * force;
+      anglerPushY += (dyp / d) * force;
+    };
 
     function animateAngler() {
-      var prevX = anglerX;
-      var prevY = anglerY;
-
-      // Distance to target (cursor)
-      var distX = anglerTargetX - anglerX;
-      var distY = anglerTargetY - anglerY;
-      var dist = Math.sqrt(distX * distX + distY * distY);
-
-      // Variable speed - predatory behavior:
-      // Far away: moderate pursuit | Mid-range: cautious stalk | Close: drift alongside
-      var lerpSpeed;
-      if (dist > 400) lerpSpeed = 0.006;
-      else if (dist > 200) lerpSpeed = 0.01;
-      else if (dist > 80) lerpSpeed = 0.005;
-      else lerpSpeed = 0.003;
-
-      anglerX += distX * lerpSpeed;
-      anglerY += distY * lerpSpeed;
       anglerTime += 0.02;
 
-      // Movement speed
-      var dx = anglerX - prevX;
-      var dy = anglerY - prevY;
-      anglerSpeed = Math.sqrt(dx * dx + dy * dy);
+      // Anchor just to the LEFT of the "© 2026 …" line, vertically centered
+      var r = anglerAnchor.getBoundingClientRect();
+      var gap = 20;
+      var targetX = Math.max(anglerHalfWidth + 6, r.left - gap - anglerHalfWidth);
+      var targetY = r.top + r.height / 2;
 
-      // Idle detection
-      var timeSinceMove = Date.now() - anglerLastMoveTime;
-      var isIdle = timeSinceMove > 2500;
-      var idleFactor = Math.min(1, timeSinceMove / 5000); // ramps up over 5s
+      // Ease into place (glides up on first reveal, follows on scroll/resize)
+      anglerX += (targetX - anglerX) * 0.08;
+      anglerY += (targetY - anglerY) * 0.08;
 
-      // Jaw opens when approaching cursor (dist < 120)
-      var jawTarget = dist < 120 ? Math.min(1, (120 - dist) / 80) : 0;
-      anglerJawOpen += (jawTarget - anglerJawOpen) * 0.04;
-      if (anglerJaw) {
-        var jawOffset = anglerJawOpen * 4;
-        anglerJaw.style.transform = 'translateY(' + jawOffset + 'px)';
+      // Visible in dark mode while the copyright line is on screen
+      var visible = r.top < window.innerHeight - 10 && r.bottom > 0;
+
+      // Kelp bed fades in alongside the fish as the footer is reached
+      if (anglerKelp) {
+        kelpDepth += ((visible ? 0.85 : 0) - kelpDepth) * 0.06;
+        anglerKelp.style.opacity = kelpDepth.toFixed(3);
       }
 
-      // Swimming undulation — multi-frequency for organic feel
-      var swimBase = Math.sin(anglerTime * 0.8) * (isIdle ? 7 : 3);
-      var swimSecondary = Math.sin(anglerTime * 1.6) * (isIdle ? 3 : 1);
-      var swimTertiary = Math.sin(anglerTime * 2.4) * 0.5;
-      var swimY = swimBase + swimSecondary + swimTertiary;
+      // Idle jaw — slow, occasional gulp
+      var jawTarget = Math.sin(anglerTime * 0.5) > 0.7 ? 1 : 0;
+      anglerJawOpen += (jawTarget - anglerJawOpen) * 0.04;
+      if (anglerJaw) {
+        anglerJaw.style.transform = 'translateY(' + (anglerJawOpen * 4) + 'px)';
+      }
 
-      // Body rotation - follows path with organic lag
-      var swimRotate = Math.sin(anglerTime * 0.6) * (isIdle ? 4 : 2);
-      swimRotate += Math.sin(anglerTime * 1.1) * (isIdle ? 1.5 : 0.7);
-      // Add slight tilt toward movement direction
-      var moveTilt = Math.atan2(dy, Math.abs(dx) + 0.01) * (180 / Math.PI) * 0.08;
-      swimRotate += moveTilt;
-
-      // Breathing scale — slower, more subtle
+      // Gentle hover bob + breathing (stays in place)
+      var swimY = Math.sin(anglerTime * 0.8) * 3 + Math.sin(anglerTime * 1.6) * 1;
+      var swimRotate = Math.sin(anglerTime * 0.6) * 1.5 + Math.sin(anglerTime * 1.1) * 0.5;
       var breathScale = 1 + Math.sin(anglerTime * 0.35) * 0.015 + Math.sin(anglerTime * 0.7) * 0.008;
 
-      // Depth-based opacity (simulates swimming in/out of darkness)
-      var depthTarget = 0.75 + Math.sin(anglerTime * 0.15) * 0.1;
-      if (isIdle) depthTarget -= idleFactor * 0.15; // fades into darkness when idle
-      anglerDepth += (depthTarget - anglerDepth) * 0.01;
+      // Opacity gate
+      var depthTarget = visible ? 0.85 + Math.sin(anglerTime * 0.15) * 0.06 : 0;
+      anglerDepth += (depthTarget - anglerDepth) * 0.05;
       anglerfish.style.opacity = document.body.classList.contains('dark') ? anglerDepth : '0';
 
-      // Flip to face cursor direction (with wide hysteresis)
-      if (dx < -0.5) anglerFlipped = false;
-      if (dx > 0.5) anglerFlipped = true;
+      // Mirror the art so the head/lure faces RIGHT, toward the text
+      var scaleX = -breathScale;
 
-      var scaleX = anglerFlipped ? breathScale : -breathScale;
+      // Apply + decay click-wave push
+      anglerPushX *= 0.92;
+      anglerPushY *= 0.92;
 
-      anglerfish.style.left = anglerX + 'px';
-      anglerfish.style.top = (anglerY + swimY) + 'px';
+      anglerfish.style.left = (anglerX + anglerPushX) + 'px';
+      anglerfish.style.top = (anglerY + swimY + anglerPushY) + 'px';
       anglerfish.style.transform = 'translate(-50%, -50%) scaleX(' + scaleX + ') scaleY(' + breathScale + ') rotate(' + swimRotate + 'deg)';
 
       requestAnimationFrame(animateAngler);
     }
     animateAngler();
+  }
+
+  // ========================================
+  // JELLYFISH — slow wander around the top of the viewport (dark mode)
+  // Position only (opacity stays CSS-controlled) so they never vanish.
+  // ========================================
+  var jellies = [
+    { el: document.querySelector('.jellyfish-purple'), x: 0, y: 0, tx: 0, ty: 0, t: Math.random() * 10, repick: 0, speed: 0.0035 },
+    { el: document.querySelector('.jellyfish-teal'), x: 0, y: 0, tx: 0, ty: 0, t: Math.random() * 10, repick: 0, speed: 0.0028 }
+  ];
+  if (jellies[0].el && jellies[1].el && !isTouchDevice) {
+    // Roam the upper portion of the viewport (fixed — independent of scroll).
+    // Inset well away from the edges so they never hug/bounce off the walls.
+    function jellyBounds() {
+      return {
+        left: window.innerWidth * 0.16,
+        top: window.innerHeight * 0.12,
+        width: window.innerWidth * 0.6,
+        height: window.innerHeight * 0.3
+      };
+    }
+
+    var jb = jellyBounds();
+    jellies.forEach(function (j) {
+      j.x = jb.left + Math.random() * jb.width;
+      j.y = jb.top + Math.random() * jb.height;
+      j.tx = j.x; j.ty = j.y;
+    });
+
+    function animateJellies() {
+      var b = jellyBounds();
+      for (var i = 0; i < jellies.length; i++) {
+        var j = jellies[i];
+        j.t += 0.02;
+
+        var dxx = j.tx - j.x, dyy = j.ty - j.y;
+        var d = Math.sqrt(dxx * dxx + dyy * dyy);
+        j.repick--;
+        if (d < 40 || j.repick <= 0) {
+          j.tx = b.left + Math.random() * b.width;
+          j.ty = b.top + Math.random() * b.height;
+          j.repick = 240 + Math.floor(Math.random() * 240);
+        }
+        j.tx = Math.min(b.left + b.width, Math.max(b.left, j.tx));
+        j.ty = Math.min(b.top + b.height, Math.max(b.top, j.ty));
+
+        dxx = j.tx - j.x; dyy = j.ty - j.y;
+        j.x += dxx * j.speed;
+        j.y += dyy * j.speed;
+
+        var bob = Math.sin(j.t) * 3;
+        j.el.style.left = j.x + 'px';
+        j.el.style.top = (j.y + bob) + 'px';
+      }
+      requestAnimationFrame(animateJellies);
+    }
+    animateJellies();
+  }
+
+  // ========================================
+  // DEEP-SEA CANVAS — marine snow + click ripples
+  // ========================================
+  var deepSeaCanvas = document.querySelector('.deep-sea-canvas');
+  if (deepSeaCanvas) {
+    var dsCtx = deepSeaCanvas.getContext('2d');
+    var snow = [];
+    var ripples = [];
+    var snowCount = 0;
+
+    function resizeDeepSea() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      deepSeaCanvas.width = window.innerWidth * dpr;
+      deepSeaCanvas.height = window.innerHeight * dpr;
+      deepSeaCanvas.style.width = window.innerWidth + 'px';
+      deepSeaCanvas.style.height = window.innerHeight + 'px';
+      dsCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // Scale snow count to viewport area
+      snowCount = Math.round((window.innerWidth * window.innerHeight) / 9000);
+    }
+    resizeDeepSea();
+    window.addEventListener('resize', resizeDeepSea);
+
+    // Seed marine snow — tiny drifting particles of varied size/speed/depth
+    function seedSnow() {
+      snow = [];
+      for (var i = 0; i < snowCount; i++) {
+        var depth = Math.random(); // 0 = far (small, dim, slow), 1 = near
+        snow.push({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          r: 0.4 + depth * 1.8,
+          vy: 0.08 + depth * 0.35,
+          vx: (Math.random() - 0.5) * 0.15,
+          drift: Math.random() * Math.PI * 2,
+          driftSpeed: 0.005 + Math.random() * 0.01,
+          opacity: 0.06 + depth * 0.22
+        });
+      }
+    }
+    seedSnow();
+
+    // Ripple on click
+    document.addEventListener('click', function (e) {
+      ripples.push({ x: e.clientX, y: e.clientY, r: 4, life: 1, hue: 175 + Math.random() * 30 });
+    });
+
+    function animateDeepSea() {
+      var isDark = document.body.classList.contains('dark');
+      dsCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      if (isDark) {
+        // --- Marine snow ---
+        for (var i = 0; i < snow.length; i++) {
+          var p = snow[i];
+          p.drift += p.driftSpeed;
+          p.y += p.vy;
+          p.x += p.vx + Math.sin(p.drift) * 0.25;
+          if (p.y > window.innerHeight + 5) { p.y = -5; p.x = Math.random() * window.innerWidth; }
+          if (p.x < -5) p.x = window.innerWidth + 5;
+          if (p.x > window.innerWidth + 5) p.x = -5;
+          dsCtx.beginPath();
+          dsCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          dsCtx.fillStyle = 'rgba(200, 230, 235, ' + p.opacity + ')';
+          dsCtx.fill();
+        }
+
+        // --- Click ripples ---
+        for (var r = ripples.length - 1; r >= 0; r--) {
+          var rp = ripples[r];
+          rp.r += 3;
+          rp.life -= 0.02;
+          if (rp.life <= 0) { ripples.splice(r, 1); continue; }
+          dsCtx.beginPath();
+          dsCtx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+          dsCtx.strokeStyle = 'hsla(' + rp.hue + ', 75%, 70%, ' + (rp.life * 0.4) + ')';
+          dsCtx.lineWidth = 1.5;
+          dsCtx.stroke();
+          // inner ring
+          dsCtx.beginPath();
+          dsCtx.arc(rp.x, rp.y, rp.r * 0.6, 0, Math.PI * 2);
+          dsCtx.strokeStyle = 'hsla(' + rp.hue + ', 75%, 80%, ' + (rp.life * 0.25) + ')';
+          dsCtx.lineWidth = 1;
+          dsCtx.stroke();
+        }
+      }
+      requestAnimationFrame(animateDeepSea);
+    }
+    animateDeepSea();
+  }
+
+  // ========================================
+  // SUBMERGE WASH (plays when entering dark mode)
+  // ========================================
+  (function () {
+    var subEl = document.createElement('div');
+    subEl.className = 'submerge-overlay';
+    document.body.appendChild(subEl);
+    var subWasDark = document.body.classList.contains('dark');
+    var subObs = new MutationObserver(function () {
+      var isDark = document.body.classList.contains('dark');
+      if (isDark && !subWasDark) {
+        subEl.style.setProperty('--sub-x', '50%');
+        subEl.style.setProperty('--sub-y', '0%');
+        subEl.classList.remove('active');
+        void subEl.offsetWidth;
+        subEl.classList.add('active');
+      }
+      subWasDark = isDark;
+    });
+    subObs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  })();
+
+  // ========================================
+  // JELLYFISH SCROLL-AWAY (anchored near top, scroll out of view)
+  // ========================================
+  var jellyEls = document.querySelectorAll('.jellyfish');
+  if (jellyEls.length) {
+    var applyJellyScroll = function () {
+      var sy = window.scrollY || window.pageYOffset || 0;
+      for (var ji = 0; ji < jellyEls.length; ji++) {
+        jellyEls[ji].style.transform = 'translateY(' + (-sy) + 'px)';
+      }
+    };
+    applyJellyScroll();
+    window.addEventListener('scroll', applyJellyScroll, { passive: true });
   }
 
   // ========================================
@@ -909,6 +1072,11 @@
           }
           // Update count so they're never trimmed
           particleCount = particles.length;
+
+          // Shove the anglerfish away from the burst
+          if (anglerfish && anglerfish._push) {
+            anglerfish._push(rect.left + rect.width / 2, rect.top + rect.height / 2, 260);
+          }
         }
       });
     }
@@ -1024,197 +1192,6 @@
           }
         });
       });
-    }
-  }
-
-  // ========================================
-  // HERO IMAGE DISPLACEMENT / DEEP-SEA SHADER
-  // ========================================
-  var dispCanvas = document.getElementById('hero-displacement');
-  var heroImg = document.querySelector('.hero-image img');
-  if (dispCanvas && heroImg && !isTouchDevice && typeof ogl !== 'undefined') {
-    function initDisplacement() {
-      var parent = dispCanvas.parentElement;
-      var dRenderer = new ogl.Renderer({
-        canvas: dispCanvas,
-        alpha: true,
-        premultipliedAlpha: true,
-        antialias: false,
-        dpr: Math.min(window.devicePixelRatio, 2)
-      });
-      var dGl = dRenderer.gl;
-
-      function resizeDisp() {
-        dRenderer.setSize(parent.offsetWidth, parent.offsetHeight);
-      }
-      resizeDisp();
-      window.addEventListener('resize', resizeDisp);
-
-      var dVertex = '\n\
-        attribute vec2 position;\n\
-        attribute vec2 uv;\n\
-        varying vec2 vUv;\n\
-        void main() {\n\
-          vUv = uv;\n\
-          gl_Position = vec4(position, 0.0, 1.0);\n\
-        }\n\
-      ';
-
-      // Shader that works as subtle overlay in light mode
-      // and as full deep-sea scene in dark mode
-      var dFragment = '\n\
-        precision highp float;\n\
-        varying vec2 vUv;\n\
-        uniform float uTime;\n\
-        uniform vec2 uMouse;\n\
-        uniform float uScroll;\n\
-        uniform float uDark;\n\
-        \n\
-        vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x,289.0);}\n\
-        float snoise2(vec2 v){\n\
-          const vec4 C=vec4(0.211324865405187,0.366025403784439,-0.577350269189626,0.024390243902439);\n\
-          vec2 i=floor(v+dot(v,C.yy));vec2 x0=v-i+dot(i,C.xx);\n\
-          vec2 i1=(x0.x>x0.y)?vec2(1.0,0.0):vec2(0.0,1.0);\n\
-          vec4 x12=x0.xyxy+C.xxzz;x12.xy-=i1;i=mod(i,289.0);\n\
-          vec3 p=permute(permute(i.y+vec3(0.0,i1.y,1.0))+i.x+vec3(0.0,i1.x,1.0));\n\
-          vec3 m=max(0.5-vec3(dot(x0,x0),dot(x12.xy,x12.xy),dot(x12.zw,x12.zw)),0.0);\n\
-          m=m*m;m=m*m;\n\
-          vec3 x2=2.0*fract(p*C.www)-1.0;vec3 h=abs(x2)-0.5;\n\
-          vec3 ox=floor(x2+0.5);vec3 a0=x2-ox;\n\
-          m*=1.79284291400159-0.85373472095314*(a0*a0+h*h);\n\
-          vec3 g;g.x=a0.x*x0.x+h.x*x0.y;g.yz=a0.yz*x12.xz+h.yz*x12.yw;\n\
-          return 130.0*dot(m,g);\n\
-        }\n\
-        \n\
-        void main(){\n\
-          vec2 uv=vUv;\n\
-          float t=uTime*0.3;\n\
-          float mouseDist=length(uv-uMouse);\n\
-          \n\
-          if(uDark<0.5){\n\
-            // Light mode: subtle displacement overlay\n\
-            float mouseWave=smoothstep(0.5,0.0,mouseDist)*0.02;\n\
-            float n=snoise2(uv*3.0+t)*0.008;\n\
-            n+=mouseWave*sin(t*5.0+mouseDist*20.0);\n\
-            n+=uScroll*0.003*snoise2(uv*5.0);\n\
-            float edge=smoothstep(0.0,0.15,min(min(uv.x,1.0-uv.x),min(uv.y,1.0-uv.y)));\n\
-            float alpha=abs(n)*8.0*edge;\n\
-            gl_FragColor=vec4(1.0,1.0,1.0,clamp(alpha,0.0,0.25));\n\
-          } else {\n\
-            // Dark mode: deep-sea ecosystem\n\
-            vec3 deepBlue=vec3(0.03,0.06,0.14);\n\
-            vec3 midBlue=vec3(0.06,0.12,0.22);\n\
-            \n\
-            // Water gradient\n\
-            vec3 bg=mix(midBlue,deepBlue,uv.y*0.8+snoise2(uv*1.5+t*0.05)*0.06);\n\
-            \n\
-            // Volumetric light rays from above\n\
-            float ray1=smoothstep(0.3,0.0,abs(uv.x-0.3-sin(t*0.2)*0.05))*(1.0-uv.y)*0.15;\n\
-            float ray2=smoothstep(0.25,0.0,abs(uv.x-0.7+cos(t*0.15)*0.04))*(1.0-uv.y)*0.12;\n\
-            bg+=vec3(0.1,0.2,0.35)*(ray1+ray2);\n\
-            \n\
-            // Light caustics from above\n\
-            float caustic1=snoise2(uv*5.0+vec2(t*0.4,t*0.25));\n\
-            float caustic2=snoise2(uv*7.0+vec2(-t*0.35,t*0.5));\n\
-            float caustics=max(0.0,caustic1*caustic2)*0.5*(1.0-uv.y);\n\
-            bg+=vec3(0.08,0.18,0.28)*caustics;\n\
-            \n\
-            // Jellyfish (larger, brighter)\n\
-            vec2 jelly1Pos=vec2(0.25+sin(t*0.3)*0.1,0.35+cos(t*0.4)*0.12);\n\
-            float jelly1=smoothstep(0.08,0.0,length((uv-jelly1Pos)*vec2(1.0,1.4)));\n\
-            float jelly1Trail=smoothstep(0.025,0.0,abs(uv.x-jelly1Pos.x))*smoothstep(jelly1Pos.y,jelly1Pos.y+0.18,uv.y)*0.6;\n\
-            bg+=vec3(0.6,0.3,1.0)*jelly1*0.8;\n\
-            bg+=vec3(0.4,0.2,0.8)*jelly1Trail*0.4;\n\
-            \n\
-            vec2 jelly2Pos=vec2(0.72+cos(t*0.25)*0.08,0.5+sin(t*0.35)*0.1);\n\
-            float jelly2=smoothstep(0.06,0.0,length((uv-jelly2Pos)*vec2(1.0,1.3)));\n\
-            bg+=vec3(0.2,0.8,0.9)*jelly2*0.7;\n\
-            \n\
-            // Bioluminescent organisms (bright!)\n\
-            float glow1=smoothstep(0.04,0.0,length(uv-vec2(0.15+sin(t*0.6)*0.12,0.6+cos(t*0.4)*0.1)));\n\
-            float glow2=smoothstep(0.03,0.0,length(uv-vec2(0.6+cos(t*0.35)*0.14,0.25+sin(t*0.7)*0.08)));\n\
-            float glow3=smoothstep(0.025,0.0,length(uv-vec2(0.85+sin(t*0.8)*0.06,0.7+cos(t*0.55)*0.05)));\n\
-            float glow4=smoothstep(0.035,0.0,length(uv-vec2(0.4+cos(t*0.45)*0.09,0.8+sin(t*0.9)*0.04)));\n\
-            float glow5=smoothstep(0.02,0.0,length(uv-vec2(0.55+sin(t*1.1)*0.05,0.15+cos(t*0.5)*0.07)));\n\
-            float glow6=smoothstep(0.02,0.0,length(uv-vec2(0.9+cos(t*0.6)*0.04,0.4+sin(t*0.85)*0.06)));\n\
-            \n\
-            vec3 lureGold=vec3(1.0,0.75,0.35);\n\
-            vec3 biolum=vec3(0.3,0.85,1.0);\n\
-            vec3 biolumWarm=vec3(0.9,0.6,0.2);\n\
-            bg+=lureGold*glow1*1.2;\n\
-            bg+=biolum*glow2*1.0;\n\
-            bg+=biolum*glow3*0.8;\n\
-            bg+=biolumWarm*glow4*0.7;\n\
-            bg+=lureGold*glow5*0.6;\n\
-            bg+=biolum*glow6*0.5;\n\
-            \n\
-            // Kelp silhouettes at edges\n\
-            float kelp1=smoothstep(0.025,0.0,abs(uv.x-0.05-sin(uv.y*8.0+t*0.8)*0.02))*smoothstep(0.3,0.8,uv.y);\n\
-            float kelp2=smoothstep(0.02,0.0,abs(uv.x-0.95+sin(uv.y*6.0+t*0.6)*0.015))*smoothstep(0.4,0.9,uv.y);\n\
-            bg=mix(bg,deepBlue*0.3,kelp1*0.7);\n\
-            bg=mix(bg,deepBlue*0.3,kelp2*0.6);\n\
-            \n\
-            // Mouse interaction — bright bioluminescent wake\n\
-            float mouseGlow=smoothstep(0.3,0.0,mouseDist)*0.5;\n\
-            float mouseRipple=sin(mouseDist*25.0-t*3.0)*smoothstep(0.35,0.1,mouseDist)*0.15;\n\
-            bg+=lureGold*(mouseGlow+max(0.0,mouseRipple));\n\
-            \n\
-            // Marine snow\n\
-            float snow1=snoise2(uv*20.0+t*0.3);\n\
-            float snow2=snoise2(uv*30.0+vec2(t*0.4,-t*0.2));\n\
-            float marineSnow=smoothstep(0.7,0.78,snow1)*0.15+smoothstep(0.75,0.82,snow2)*0.1;\n\
-            bg+=vec3(0.5,0.7,0.8)*marineSnow;\n\
-            \n\
-            gl_FragColor=vec4(bg,1.0);\n\
-          }\n\
-        }\n\
-      ';
-
-      var dGeometry = new ogl.Triangle(dGl);
-      var dProgram = new ogl.Program(dGl, {
-        vertex: dVertex,
-        fragment: dFragment,
-        uniforms: {
-          uTime: { value: 0 },
-          uMouse: { value: [0.5, 0.5] },
-          uScroll: { value: 0 },
-          uDark: { value: document.body.classList.contains('dark') ? 1.0 : 0.0 }
-        },
-        transparent: true,
-        depthTest: false,
-        depthWrite: false
-      });
-
-      var dMesh = new ogl.Mesh(dGl, { geometry: dGeometry, program: dProgram });
-      var dMouseTarget = { x: 0.5, y: 0.5 };
-      var dMouse = { x: 0.5, y: 0.5 };
-
-      parent.addEventListener('mousemove', function (e) {
-        var rect = parent.getBoundingClientRect();
-        dMouseTarget.x = (e.clientX - rect.left) / rect.width;
-        dMouseTarget.y = 1.0 - (e.clientY - rect.top) / rect.height;
-      });
-
-      function animateDisp(t) {
-        requestAnimationFrame(animateDisp);
-        dMouse.x += (dMouseTarget.x - dMouse.x) * 0.05;
-        dMouse.y += (dMouseTarget.y - dMouse.y) * 0.05;
-
-        var scrollNorm = Math.min(window.scrollY / window.innerHeight, 1.0);
-        dProgram.uniforms.uTime.value = t * 0.001;
-        dProgram.uniforms.uMouse.value = [dMouse.x, dMouse.y];
-        dProgram.uniforms.uScroll.value = scrollNorm;
-        dProgram.uniforms.uDark.value = document.body.classList.contains('dark') ? 1.0 : 0.0;
-
-        dRenderer.render({ scene: dMesh });
-      }
-      requestAnimationFrame(animateDisp);
-    }
-
-    if (heroImg.complete) {
-      initDisplacement();
-    } else {
-      heroImg.addEventListener('load', initDisplacement);
     }
   }
 
