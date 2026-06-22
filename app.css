@@ -342,10 +342,10 @@ body.dark .icon-moon { display: block; }
    ======================================== */
 
 #hero {
-  min-height: 100vh;
+  min-height: auto;
   display: flex;
   align-items: center;
-  padding: 8rem var(--gutter) 4rem;
+  padding: 7rem var(--gutter) 3rem;
   position: relative;
   overflow: hidden;
 }
@@ -384,12 +384,18 @@ body.dark .icon-moon { display: block; }
   z-index: 2;
   max-width: var(--container-wide);
   width: 100%;
+  min-width: 0;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1.3fr 1fr;
   gap: 4rem;
   align-items: center;
 }
+
+/* min-width:0 lets the text column shrink below its content on narrow
+   screens (grid/flex items default to min-width:auto and won't shrink),
+   so the tagline wraps inside the viewport instead of overflowing. */
+.hero-text { min-width: 0; max-width: 100%; }
 
 .hero-glow {
   position: absolute;
@@ -431,6 +437,8 @@ body.dark .icon-moon { display: block; }
   color: var(--text);
   line-height: 1.2;
   letter-spacing: -0.02em;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .hero-tagline .word {
@@ -438,6 +446,9 @@ body.dark .icon-moon { display: block; }
   overflow: hidden;
   vertical-align: top;
   margin-right: 0.25em;
+  /* Room for descenders so the clip doesn't cut off g/p/y */
+  padding-bottom: 0.18em;
+  margin-bottom: -0.18em;
 }
 
 .hero-tagline .word-inner {
@@ -586,7 +597,12 @@ body.dark .tag:hover {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
 }
 
-/* Hide the portal image in dark mode (deep-sea takes over) */
+/* In dark mode the deep-sea scene takes over — remove the portal image
+   entirely (display:none) so it doesn't reserve an empty block, which on
+   mobile (stacked, order:-1) left a large blank gap at the top of the hero. */
+body.dark .hero-image {
+  display: none;
+}
 body.dark .hero-image img {
   opacity: 0;
   pointer-events: none;
@@ -636,7 +652,7 @@ body.dark .hero-image img {
    ======================================== */
 
 #writing {
-  padding: 6vh var(--gutter) 4vh;
+  padding: 3vh var(--gutter) 3vh;
   position: relative;
 }
 
@@ -663,7 +679,7 @@ body.dark .hero-image img {
   display: grid;
   grid-template-columns: 140px 1fr;
   gap: 2rem;
-  padding: 3rem 0;
+  padding: 2rem 0;
   border-top: 1px solid var(--border);
   position: relative;
   transition: all 0.5s var(--ease);
@@ -929,7 +945,7 @@ body.dark .hero-image img {
    ======================================== */
 
 #experience {
-  padding: 6vh var(--gutter);
+  padding: 3vh var(--gutter);
 }
 
 .experience-list {
@@ -1039,7 +1055,7 @@ body.dark .hero-image img {
    ======================================== */
 
 #contact {
-  padding: 3vh var(--gutter) 6vh;
+  padding: 3vh var(--gutter) 3vh;
   position: relative;
   overflow: hidden;
 }
@@ -1070,6 +1086,8 @@ body.dark .hero-image img {
   overflow: hidden;
   vertical-align: top;
   margin-right: 0.2em;
+  padding-bottom: 0.18em;
+  margin-bottom: -0.18em;
 }
 
 @keyframes gradientShift {
@@ -1123,7 +1141,8 @@ body.dark .hero-image img {
 
 .badge-frame {
   position: relative;
-  width: 140px;
+  width: 150px;
+  height: 200px;
   border-radius: 12px;
   overflow: hidden;
   z-index: 1;
@@ -1174,8 +1193,10 @@ body.dark .credential-card {
 
 .contact-badge {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
+  object-fit: cover;
+  object-position: center;
   transition: filter 0.6s var(--ease), transform 0.6s var(--ease);
 }
 
@@ -1184,17 +1205,24 @@ body.dark .credential-card {
 .credential-card {
   position: relative;
   z-index: 1;
-  max-height: 200px;
+  width: 150px;
+  height: 200px;
   overflow: hidden;
   border-radius: 8px;
   transition: transform 0.6s var(--ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Hide the Credly iframe's internal border by stretching it past clip */
+/* Force the Credly iframe to fill/centre the card (Credly sets fixed inline
+   dimensions, so !important is required to override them) and overflow-clip
+   its internal border. */
 .credential-card iframe {
-  margin: -4px;
-  width: calc(100% + 8px);
-  height: calc(100% + 8px);
+  width: calc(100% + 10px) !important;
+  height: calc(100% + 10px) !important;
+  border: 0 !important;
+  display: block;
 }
 
 body.dark .credential-card {
@@ -1202,7 +1230,6 @@ body.dark .credential-card {
   border: 1px solid rgba(255, 255, 255, 0.12);
   /* Light card so the Credly embed's dark-grey text stays readable */
   background: #f4f1ea;
-  padding: 6px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
@@ -1370,6 +1397,7 @@ body::after {
 html {
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--bg);
+  overflow-x: hidden;
 }
 
 /* ========================================
@@ -1380,6 +1408,7 @@ html {
   .hero-content {
     grid-template-columns: 1fr;
     gap: 3rem;
+    max-width: 100%;
   }
   .hero-image { order: -1; }
   .blog-entry {
@@ -1436,6 +1465,7 @@ html {
 }
 
 @media (max-width: 600px) {
+  :root { --gutter: 1.25rem; }
   .cursor-dot, .cursor-ring { display: none; }
   body { cursor: auto; }
   a, button, .tag, .blog-entry, .project-card, .contact-link, .nav-links a { cursor: auto; }
@@ -1454,10 +1484,16 @@ html {
     border-bottom: 1px solid var(--border);
   }
   .nav-links.active { display: flex; }
-  .hero-content { grid-template-columns: 1fr; gap: 2.5rem; }
+  .hero-content { grid-template-columns: 1fr; gap: 2rem; max-width: 100%; }
   .hero-image { order: -1; }
-  #hero { min-height: auto; padding: 7rem var(--gutter) 4rem; }
-  .hero-tagline { font-size: clamp(1.8rem, 8vw, 2.5rem); }
+  /* Portal image was filling the whole screen — make it a compact banner */
+  .hero-image img {
+    max-height: 34vh;
+    object-fit: cover;
+    object-position: center;
+  }
+  #hero { min-height: auto; padding: 6rem var(--gutter) 3rem; }
+  .hero-tagline { font-size: clamp(1.7rem, 7vw, 2.3rem); }
 
   /* Contact mobile — stack fully */
   .contact-statement {
@@ -1468,11 +1504,19 @@ html {
   }
   .badge-wrap {
     flex-direction: row;
-    gap: 1.2rem;
+    gap: 1rem;
     align-items: center;
+    justify-content: center;
   }
+  /* Match badge + Credly card to the same size on mobile */
   .badge-frame {
-    width: 90px;
+    width: 124px;
+    height: 165px;
+    flex-shrink: 0;
+  }
+  .credential-card {
+    width: 124px;
+    height: 165px;
     flex-shrink: 0;
   }
   .badge-glow {
@@ -1522,6 +1566,18 @@ html {
 
   /* Disable skew on mobile */
   .skew-section { transform: none !important; }
+
+  /* Jellyfish need JS drift (off on touch) and would otherwise sit static over
+     the hero text — hide them on small screens. Keep the ambient water,
+     marine snow, kelp, and orbs which don't overlap content. */
+  .jellyfish { display: none; }
+
+  /* Smaller anglerfish on mobile; JS parks it in the bottom-right corner
+     (clear of the centered footer copyright) and handles its dark-mode fade. */
+  .anglerfish { width: 120px; }
+
+  /* Bioluminescent orbs can drift over text on a small screen — hide too */
+  .biolume { display: none; }
 }
 
 /* ========================================
@@ -1752,6 +1808,61 @@ html {
   .impact-bar { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ========================================
+   BLOG / DETAIL — code blocks + responsive
+   ======================================== */
+
+/* File-tree / code blocks (non-mermaid <pre>) — scroll instead of clip */
+.post-body pre:not(.mermaid) {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+.post-body pre:not(.mermaid) code {
+  background: none;
+  padding: 0;
+  color: var(--text-muted);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  white-space: pre;
+}
+
+@media (max-width: 900px) {
+  .page-detail { padding: 8rem var(--gutter) 5rem; }
+}
+
+@media (max-width: 600px) {
+  /* Trim the oversized top padding so the post starts near the top */
+  .page-detail { padding: 6rem var(--gutter) 4rem; }
+  .back-link { margin-bottom: 1.5rem; }
+  .page-header, .post-header { margin-bottom: 2rem; }
+  .post-header .blog-tag { margin-bottom: 1rem; }
+
+  .post-body h2 { margin: 2.5rem 0 0.8rem; padding-left: 1rem; }
+  .post-body h3 { margin: 1.5rem 0 0.5rem; }
+  .detail-content h2 { margin: 2rem 0 0.8rem; }
+
+  /* Drop full-bleed negative margins that overflowed the viewport */
+  .post-intro {
+    margin: 0 0 2rem;
+    padding: 1.1rem 1.2rem;
+    font-size: 1.05rem;
+  }
+  .comparison-grid { margin: 2rem 0; }
+  .comparison-col { padding: 1.3rem; }
+  .comparison-col:first-child {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .post-body pre:not(.mermaid) { font-size: 0.72rem; padding: 1rem; }
+}
+
 /* Mermaid fullscreen overlay */
 .diagram-expand-btn {
   position: absolute;
@@ -1823,7 +1934,6 @@ html {
 
 .site-footer {
   padding: 3rem var(--gutter);
-  border-top: 1px solid var(--border);
 }
 
 .site-footer p {

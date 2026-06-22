@@ -204,7 +204,7 @@
   // ========================================
   var anglerfish = document.querySelector('.anglerfish');
   var anglerAnchor = document.querySelector('.site-footer p');
-  if (anglerfish && anglerAnchor && !isTouchDevice) {
+  if (anglerfish && anglerAnchor) {
     var anglerKelp = document.querySelector('.kelp-bottom');
     var kelpDepth = 0; // kelp fades in with the fish when the bottom is reached
     if (anglerKelp) anglerKelp.style.opacity = '0'; // hidden until scrolled to
@@ -230,11 +230,22 @@
     function animateAngler() {
       anglerTime += 0.02;
 
-      // Anchor just to the LEFT of the "© 2026 …" line, vertically centered
       var r = anglerAnchor.getBoundingClientRect();
-      var gap = 20;
-      var targetX = Math.max(anglerHalfWidth + 6, r.left - gap - anglerHalfWidth);
-      var targetY = r.top + r.height / 2;
+      var halfW = (anglerfish.offsetWidth || 180) / 2;
+      var halfH = (anglerfish.offsetHeight || 130) / 2;
+      var isMobile = window.innerWidth <= 600;
+
+      var targetX, targetY;
+      if (isMobile) {
+        // Tuck fully into the bottom-right corner, clear of the centered copyright
+        targetX = window.innerWidth - halfW - 6;
+        targetY = window.innerHeight - halfH - 12;
+      } else {
+        // Anchor just to the LEFT of the "© 2026 …" line, vertically centered
+        var gap = 20;
+        targetX = Math.max(halfW + 6, r.left - gap - halfW);
+        targetY = r.top + r.height / 2;
+      }
 
       // Ease into place (glides up on first reveal, follows on scroll/resize)
       anglerX += (targetX - anglerX) * 0.08;
@@ -256,9 +267,9 @@
         anglerJaw.style.transform = 'translateY(' + (anglerJawOpen * 4) + 'px)';
       }
 
-      // Gentle hover bob + breathing (stays in place)
-      var swimY = Math.sin(anglerTime * 0.8) * 3 + Math.sin(anglerTime * 1.6) * 1;
-      var swimRotate = Math.sin(anglerTime * 0.6) * 1.5 + Math.sin(anglerTime * 1.1) * 0.5;
+      // Very gentle hover so it stays level with the copyright line it floats beside
+      var swimY = Math.sin(anglerTime * 0.8) * 1.5 + Math.sin(anglerTime * 1.6) * 0.5;
+      var swimRotate = Math.sin(anglerTime * 0.6) * 1 + Math.sin(anglerTime * 1.1) * 0.3;
       var breathScale = 1 + Math.sin(anglerTime * 0.35) * 0.015 + Math.sin(anglerTime * 0.7) * 0.008;
 
       // Opacity gate
