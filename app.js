@@ -1115,8 +1115,10 @@
       var target = parent ? parseInt(parent.dataset.count, 10) : 0;
       if (!target) return;
 
-      // HTML holds the real final value (good for crawlers/no-JS); animate
-      // up from 0 only when scrolled into view.
+      // HTML holds the real final value (good for crawlers/no-JS). Keep that
+      // value in the DOM until the scroll animation actually starts
+      // (immediateRender:false) — otherwise the "from:0" state is applied on
+      // load and JS-rendering crawlers/AI read "0".
       gsap.fromTo(el,
         { innerText: 0 },
         {
@@ -1124,6 +1126,7 @@
           duration: 1.5,
           ease: 'power2.out',
           snap: { innerText: 1 },
+          immediateRender: false,
           scrollTrigger: {
             trigger: parent,
             start: 'top 85%',
