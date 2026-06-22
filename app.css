@@ -73,17 +73,17 @@ body.loading { overflow: hidden; }
    SCROLL-LINKED PALETTE SHIFTS
    ======================================== */
 
-[data-active-palette="warm"] {
+body[data-active-palette="warm"] {
   --accent: #b8703b;
   --accent-glow: rgba(184, 112, 59, 0.15);
 }
 
-[data-active-palette="cool"] {
+body[data-active-palette="cool"] {
   --accent: #5a8a7a;
   --accent-glow: rgba(90, 138, 122, 0.12);
 }
 
-[data-active-palette="deep"] {
+body[data-active-palette="deep"] {
   --accent: #8b5e3c;
   --accent-glow: rgba(139, 94, 60, 0.15);
 }
@@ -1096,10 +1096,20 @@ body.dark .icon-moon { display: block; }
 
 body.dark .badge-frame {
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 body.dark .badge-frame::before {
-  border-color: rgba(255, 255, 255, 0.05);
+  border-color: transparent;
+}
+
+body.dark .contact-badge {
+  border-radius: 12px;
+}
+
+body.dark .credential-card {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .badge-wrap:hover .badge-frame {
@@ -1130,6 +1140,9 @@ body.dark .badge-frame::before {
 
 body.dark .credential-card {
   filter: brightness(0.85);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg);
 }
 
 .credential-card:hover { transform: translateY(-4px); }
@@ -1255,17 +1268,17 @@ body.dark .project-card:hover {
 body.dark .page-loader { background: var(--bg); }
 
 /* Dark palette shifts */
-body.dark [data-active-palette="warm"] {
+body.dark[data-active-palette="warm"] {
   --accent: #d4a05a;
   --accent-glow: rgba(212, 160, 90, 0.1);
 }
 
-body.dark [data-active-palette="cool"] {
+body.dark[data-active-palette="cool"] {
   --accent: #7ab8a5;
   --accent-glow: rgba(122, 184, 165, 0.08);
 }
 
-body.dark [data-active-palette="deep"] {
+body.dark[data-active-palette="deep"] {
   --accent: #c4874d;
   --accent-glow: rgba(196, 135, 77, 0.1);
 }

@@ -389,7 +389,7 @@
       entries.forEach(function (e) {
         if (e.isIntersecting && e.intersectionRatio > 0.4) {
           var palette = e.target.dataset.palette;
-          document.documentElement.setAttribute('data-active-palette', palette);
+          document.body.setAttribute('data-active-palette', palette);
         }
       });
     }, { threshold: [0.4, 0.6] });
