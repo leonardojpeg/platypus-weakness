@@ -555,6 +555,8 @@ body.dark #hero-displacement {
   z-index: 1;
   opacity: 1;
 }
+
+@keyframes heroFlip {
   0% { transform: rotate(0deg) scale(1); }
   25% { transform: rotate(5deg) scale(1.06); }
   50% { transform: rotate(0deg) scale(1.1); }
@@ -569,6 +571,8 @@ body.dark #hero-displacement {
 /* ========================================
    SECTION DIVIDER
    ======================================== */
+
+.section-divider {
   max-width: var(--container);
   margin: 0 auto;
   height: 1px;
@@ -1800,12 +1804,7 @@ html {
   opacity: 0;
   pointer-events: none;
   z-index: 1;
-  transition: opacity 3s ease 1s;
   transform: translate(-50%, -50%);
-}
-
-body.dark .anglerfish {
-  opacity: 0.75;
 }
 
 /* Lure pulsing glow - irregular organic rhythm */

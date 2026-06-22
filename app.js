@@ -217,7 +217,7 @@
     var anglerSpeed = 0;
     var anglerLastMoveTime = Date.now();
     var anglerJawOpen = 0; // 0 = closed, 1 = fully open
-    var anglerDepth = 0.75; // opacity depth simulation
+    var anglerDepth = 0; // starts invisible, fades in slowly
 
     // Get jaw element for animation
     var anglerJaw = anglerfish.querySelector('.angler-jaw');
