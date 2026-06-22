@@ -388,38 +388,137 @@
 
   <!-- Hidden deep-sea easter egg (dark mode only) -->
   <div class="anglerfish" aria-hidden="true">
-    <svg viewBox="0 0 200 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- Lure light glow -->
-      <circle cx="85" cy="18" r="12" fill="#d4a05a" opacity="0.15"/>
-      <circle cx="85" cy="18" r="6" fill="#d4a05a" opacity="0.4"/>
-      <circle cx="85" cy="18" r="3" fill="#ede9e3" opacity="0.9"/>
-      <!-- Lure stalk -->
-      <path d="M100 55 C95 45 88 30 85 20" stroke="#ede9e3" stroke-width="0.8" opacity="0.5" fill="none"/>
-      <!-- Body -->
-      <ellipse cx="120" cy="80" rx="45" ry="35" fill="#1a1917" stroke="#2a2825" stroke-width="1"/>
-      <!-- Tail -->
-      <path d="M165 80 C175 70 185 75 180 80 C185 85 175 90 165 80" fill="#1a1917" stroke="#2a2825" stroke-width="0.8"/>
-      <!-- Dorsal fins -->
-      <path d="M100 50 C105 45 110 47 108 52" stroke="#2a2825" stroke-width="0.8" fill="none"/>
-      <path d="M112 47 C117 42 122 44 120 49" stroke="#2a2825" stroke-width="0.8" fill="none"/>
-      <!-- Eye -->
-      <circle cx="95" cy="75" r="6" fill="#0a0a09"/>
-      <circle cx="95" cy="75" r="4" fill="#1a1917"/>
-      <circle cx="94" cy="73" r="1.5" fill="#d4a05a" opacity="0.8"/>
-      <!-- Mouth -->
-      <path d="M78 88 C82 95 95 98 105 93" stroke="#2a2825" stroke-width="1" fill="none"/>
-      <!-- Teeth -->
-      <path d="M82 89 L83 93 L85 89" stroke="#3a3835" stroke-width="0.6" fill="none"/>
-      <path d="M88 91 L89 95 L91 91" stroke="#3a3835" stroke-width="0.6" fill="none"/>
-      <path d="M95 92 L96 96 L98 92" stroke="#3a3835" stroke-width="0.6" fill="none"/>
-      <path d="M101 92 L102 95 L103 91" stroke="#3a3835" stroke-width="0.6" fill="none"/>
-      <!-- Pectoral fin -->
-      <path d="M130 95 C135 105 128 110 123 103" stroke="#2a2825" stroke-width="0.8" fill="#1a1917"/>
-      <!-- Light rays from lure -->
-      <line x1="85" y1="18" x2="78" y2="8" stroke="#d4a05a" stroke-width="0.4" opacity="0.3"/>
-      <line x1="85" y1="18" x2="92" y2="9" stroke="#d4a05a" stroke-width="0.4" opacity="0.3"/>
-      <line x1="85" y1="18" x2="80" y2="5" stroke="#d4a05a" stroke-width="0.4" opacity="0.2"/>
-      <line x1="85" y1="18" x2="90" y2="6" stroke="#d4a05a" stroke-width="0.4" opacity="0.2"/>
+    <svg viewBox="0 0 260 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Body gradient for depth/volume -->
+        <radialGradient id="anglerBodyGrad" cx="45%" cy="40%" r="55%">
+          <stop offset="0%" stop-color="#2d2a26"/>
+          <stop offset="50%" stop-color="#1a1816"/>
+          <stop offset="100%" stop-color="#0d0c0b"/>
+        </radialGradient>
+        <!-- Bioluminescent lure glow -->
+        <radialGradient id="lureGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fffbe6" stop-opacity="1"/>
+          <stop offset="30%" stop-color="#f5d576" stop-opacity="0.8"/>
+          <stop offset="60%" stop-color="#c49a3c" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#8b6914" stop-opacity="0"/>
+        </radialGradient>
+        <!-- Subtle skin texture noise -->
+        <filter id="anglerSkin" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="3" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <!-- Lure pulsing animation -->
+        <filter id="lureBlur">
+          <feGaussianBlur stdDeviation="2"/>
+        </filter>
+      </defs>
+
+      <!-- Bioluminescent lure glow (outer) -->
+      <circle cx="78" cy="18" r="22" fill="url(#lureGlow)" class="angler-lure-outer"/>
+      <circle cx="78" cy="18" r="14" fill="#d4a05a" opacity="0.2" class="angler-lure-mid"/>
+      <!-- Lure bulb -->
+      <circle cx="78" cy="18" r="5" fill="#f5e6a3" opacity="0.95" class="angler-lure-bulb"/>
+      <circle cx="78" cy="18" r="3" fill="#fffdf0" class="angler-lure-bulb"/>
+
+      <!-- Illicium (lure stalk) - curved organic shape -->
+      <path d="M98 58 C94 48 86 38 82 28 C80 24 79 20 78 18" stroke="#4a4540" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M98 58 C94 48 86 38 82 28 C80 24 79 20 78 18" stroke="#3a3530" stroke-width="0.6" fill="none" stroke-dasharray="2 3" opacity="0.5"/>
+
+      <!-- Body - more organic anglerfish shape (bulbous, lumpy) -->
+      <path d="M75 95 C60 80 62 60 80 55 C95 50 120 48 145 55 C170 62 180 78 178 95 C176 112 160 125 140 127 C120 129 95 125 80 118 C68 112 65 105 75 95 Z" 
+            fill="url(#anglerBodyGrad)" filter="url(#anglerSkin)"/>
+      <!-- Body outline for definition -->
+      <path d="M75 95 C60 80 62 60 80 55 C95 50 120 48 145 55 C170 62 180 78 178 95 C176 112 160 125 140 127 C120 129 95 125 80 118 C68 112 65 105 75 95 Z" 
+            fill="none" stroke="#3a3632" stroke-width="0.7" opacity="0.8"/>
+
+      <!-- Body texture - wrinkles and bumps -->
+      <path d="M90 62 C95 60 102 59 108 60" stroke="#2a2623" stroke-width="0.5" fill="none" opacity="0.6"/>
+      <path d="M115 56 C122 55 130 56 135 58" stroke="#2a2623" stroke-width="0.5" fill="none" opacity="0.5"/>
+      <path d="M150 68 C155 72 158 78 157 84" stroke="#2a2623" stroke-width="0.4" fill="none" opacity="0.4"/>
+      <path d="M82 105 C88 108 96 110 104 109" stroke="#2a2623" stroke-width="0.4" fill="none" opacity="0.5"/>
+      <path d="M125 120 C132 119 138 117 142 114" stroke="#2a2623" stroke-width="0.4" fill="none" opacity="0.4"/>
+      <!-- Small bumps/warts -->
+      <circle cx="110" cy="65" r="1.5" fill="#252220" opacity="0.5"/>
+      <circle cx="135" cy="62" r="1" fill="#252220" opacity="0.4"/>
+      <circle cx="155" cy="75" r="1.8" fill="#252220" opacity="0.4"/>
+      <circle cx="100" cy="110" r="1.2" fill="#252220" opacity="0.5"/>
+      <circle cx="145" cy="115" r="1" fill="#252220" opacity="0.3"/>
+
+      <!-- Dorsal fin spines (illicia) -->
+      <path d="M95 55 C93 48 96 42 99 45 C100 48 98 53 97 55" stroke="#3a3530" stroke-width="0.6" fill="#1a1816" opacity="0.7"/>
+      <path d="M108 52 C107 44 111 39 113 42 C114 45 112 50 110 52" stroke="#3a3530" stroke-width="0.6" fill="#1a1816" opacity="0.7"/>
+      <path d="M122 50 C122 43 126 39 127 42 C128 45 126 48 124 50" stroke="#3a3530" stroke-width="0.6" fill="#1a1816" opacity="0.6"/>
+
+      <!-- Tail fin - ragged, translucent -->
+      <path d="M175 88 C182 78 192 74 195 80 C197 84 193 88 188 90 C194 92 198 97 195 102 C192 107 183 105 177 98" 
+            fill="#151311" stroke="#2d2a26" stroke-width="0.7" opacity="0.85"/>
+      <!-- Tail fin rays -->
+      <path d="M177 84 L190 78" stroke="#2a2623" stroke-width="0.4" opacity="0.5"/>
+      <path d="M178 90 L192 88" stroke="#2a2623" stroke-width="0.4" opacity="0.5"/>
+      <path d="M177 96 L190 100" stroke="#2a2623" stroke-width="0.4" opacity="0.5"/>
+
+      <!-- Pectoral fin - more detailed -->
+      <path d="M140 110 C148 118 152 128 147 132 C142 134 136 128 133 120 C131 115 134 111 140 110 Z" 
+            fill="#151311" stroke="#2d2a26" stroke-width="0.6" opacity="0.8"/>
+      <path d="M139 112 L146 125" stroke="#2a2623" stroke-width="0.3" opacity="0.5"/>
+      <path d="M137 114 L142 128" stroke="#2a2623" stroke-width="0.3" opacity="0.5"/>
+
+      <!-- Ventral fin -->
+      <path d="M110 122 C115 130 112 135 108 133 C105 131 106 126 110 122 Z" 
+            fill="#151311" stroke="#2d2a26" stroke-width="0.5" opacity="0.7"/>
+
+      <!-- Eye - large, menacing with reflective quality -->
+      <circle cx="88" cy="82" r="9" fill="#080706"/>
+      <circle cx="88" cy="82" r="7" fill="#0f0e0c"/>
+      <!-- Iris ring -->
+      <circle cx="88" cy="82" r="5" fill="none" stroke="#3d2f1a" stroke-width="1.5" opacity="0.7"/>
+      <!-- Pupil -->
+      <circle cx="88" cy="82" r="3.5" fill="#050504"/>
+      <!-- Eye reflection -->
+      <circle cx="86" cy="79" r="1.8" fill="#d4a05a" opacity="0.6"/>
+      <circle cx="90" cy="84" r="0.8" fill="#d4a05a" opacity="0.3"/>
+
+      <!-- Jaw - large underbite, anglerfish signature look -->
+      <path d="M68 98 C64 100 60 105 62 110 C64 115 72 118 82 117 C92 116 100 113 108 110 C112 108 113 104 110 100" 
+            stroke="#3a3632" stroke-width="0.8" fill="#121110"/>
+      <!-- Lower jaw definition -->
+      <path d="M65 104 C70 108 80 112 95 111 C105 110 110 107 112 103" 
+            stroke="#2a2623" stroke-width="0.5" fill="none" opacity="0.6"/>
+
+      <!-- Teeth - long, needle-like, translucent, varied sizes (upper) -->
+      <path d="M74 96 L72 104 L76 97" fill="#4a4640" stroke="#5a5550" stroke-width="0.3" opacity="0.9"/>
+      <path d="M80 94 L77 105 L82 95" fill="#4a4640" stroke="#5a5550" stroke-width="0.3" opacity="0.9"/>
+      <path d="M86 93 L84 106 L89 94" fill="#4a4640" stroke="#5a5550" stroke-width="0.3" opacity="0.85"/>
+      <path d="M93 94 L91 104 L95 95" fill="#4a4640" stroke="#5a5550" stroke-width="0.3" opacity="0.8"/>
+      <path d="M99 95 L98 103 L101 96" fill="#4a4640" stroke="#5a5550" stroke-width="0.3" opacity="0.8"/>
+      <path d="M105 97 L104 103 L107 98" fill="#3a3632" stroke="#5a5550" stroke-width="0.3" opacity="0.7"/>
+      <!-- Teeth (lower) - curved inward -->
+      <path d="M70 107 L72 99 L74 106" fill="#4a4640" stroke="#5a5550" stroke-width="0.3" opacity="0.85"/>
+      <path d="M78 109 L80 100 L82 108" fill="#4a4640" stroke="#5a5550" stroke-width="0.3" opacity="0.9"/>
+      <path d="M86 110 L88 100 L90 109" fill="#4a4640" stroke="#5a5550" stroke-width="0.3" opacity="0.9"/>
+      <path d="M94 109 L95 101 L97 108" fill="#4a4640" stroke="#5a5550" stroke-width="0.3" opacity="0.85"/>
+      <path d="M101 107 L102 100 L104 106" fill="#3a3632" stroke="#5a5550" stroke-width="0.3" opacity="0.75"/>
+      <!-- Fang-like long teeth -->
+      <path d="M76 95 L73 108 L78 96" fill="#55504a" stroke="#6a6560" stroke-width="0.3" opacity="0.7"/>
+      <path d="M90 93 L87 109 L92 94" fill="#55504a" stroke="#6a6560" stroke-width="0.3" opacity="0.7"/>
+
+      <!-- Barbel (chin whisker) -->
+      <path d="M75 118 C72 125 70 132 73 135" stroke="#3a3530" stroke-width="0.5" fill="none" opacity="0.5"/>
+      <circle cx="73" cy="136" r="1" fill="#8b7a4a" opacity="0.4"/>
+
+      <!-- Light rays emanating from lure -->
+      <line x1="78" y1="18" x2="68" y2="5" stroke="#d4a05a" stroke-width="0.5" opacity="0.25" class="angler-ray"/>
+      <line x1="78" y1="18" x2="88" y2="4" stroke="#d4a05a" stroke-width="0.5" opacity="0.25" class="angler-ray"/>
+      <line x1="78" y1="18" x2="62" y2="12" stroke="#d4a05a" stroke-width="0.4" opacity="0.2" class="angler-ray"/>
+      <line x1="78" y1="18" x2="94" y2="10" stroke="#d4a05a" stroke-width="0.4" opacity="0.2" class="angler-ray"/>
+      <line x1="78" y1="18" x2="72" y2="2" stroke="#d4a05a" stroke-width="0.3" opacity="0.15" class="angler-ray"/>
+      <line x1="78" y1="18" x2="84" y2="1" stroke="#d4a05a" stroke-width="0.3" opacity="0.15" class="angler-ray"/>
+
+      <!-- Tiny particles drawn to the lure (prey simulation) -->
+      <circle cx="65" cy="10" r="0.6" fill="#d4a05a" opacity="0.3" class="angler-particle"/>
+      <circle cx="92" cy="6" r="0.5" fill="#d4a05a" opacity="0.25" class="angler-particle"/>
+      <circle cx="72" cy="4" r="0.4" fill="#c49a3c" opacity="0.2" class="angler-particle"/>
     </svg>
   </div>
 

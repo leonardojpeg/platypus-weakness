@@ -210,32 +210,63 @@
     var anglerTargetY = anglerY;
     var anglerFlipped = false;
     var anglerTime = 0;
+    var anglerSpeed = 0;
+    var anglerIdleTime = 0;
+    var anglerLastMoveTime = Date.now();
 
     document.addEventListener('mousemove', function (e) {
       anglerTargetX = e.clientX;
       anglerTargetY = e.clientY;
+      anglerLastMoveTime = Date.now();
     });
 
     function animateAngler() {
       var prevX = anglerX;
-      anglerX += (anglerTargetX - anglerX) * 0.015;
-      anglerY += (anglerTargetY - anglerY) * 0.015;
-      anglerTime += 0.03;
+      var prevY = anglerY;
 
-      // Swimming bob
-      var swimY = Math.sin(anglerTime) * 4;
-      var swimRotate = Math.sin(anglerTime * 0.7) * 2;
+      // Distance to target
+      var distX = anglerTargetX - anglerX;
+      var distY = anglerTargetY - anglerY;
+      var dist = Math.sqrt(distX * distX + distY * distY);
 
-      // Flip to face cursor direction
+      // Variable speed: slower when close (stalking), faster to catch up when far
+      var lerpSpeed = dist > 300 ? 0.008 : dist > 100 ? 0.012 : 0.006;
+
+      anglerX += distX * lerpSpeed;
+      anglerY += distY * lerpSpeed;
+      anglerTime += 0.025;
+
+      // Calculate actual movement speed for effects
       var dx = anglerX - prevX;
-      if (dx < -0.1) anglerFlipped = false;
-      if (dx > 0.1) anglerFlipped = true;
+      var dy = anglerY - prevY;
+      anglerSpeed = Math.sqrt(dx * dx + dy * dy);
 
-      var scaleX = anglerFlipped ? 1 : -1;
+      // Idle detection (mouse stopped)
+      var timeSinceMove = Date.now() - anglerLastMoveTime;
+      var isIdle = timeSinceMove > 2000;
+
+      // Swimming undulation — more pronounced when moving
+      var swimAmplitude = isIdle ? 6 : 3 + anglerSpeed * 0.5;
+      var swimFreq = isIdle ? 0.6 : 1.0;
+      var swimY = Math.sin(anglerTime * swimFreq) * swimAmplitude;
+
+      // Body rotation follows movement direction with natural lag
+      var moveAngle = Math.atan2(dy, dx);
+      var swimRotate = Math.sin(anglerTime * 0.7) * (isIdle ? 3 : 1.5);
+      swimRotate += Math.sin(anglerTime * 1.3) * 0.5; // secondary oscillation
+
+      // Breathing scale effect
+      var breathScale = 1 + Math.sin(anglerTime * 0.4) * 0.02;
+
+      // Flip to face cursor direction (with hysteresis to prevent jitter)
+      if (dx < -0.3) anglerFlipped = false;
+      if (dx > 0.3) anglerFlipped = true;
+
+      var scaleX = anglerFlipped ? breathScale : -breathScale;
 
       anglerfish.style.left = anglerX + 'px';
       anglerfish.style.top = (anglerY + swimY) + 'px';
-      anglerfish.style.transform = 'translate(-50%, -50%) scaleX(' + scaleX + ') rotate(' + swimRotate + 'deg)';
+      anglerfish.style.transform = 'translate(-50%, -50%) scaleX(' + scaleX + ') scaleY(' + breathScale + ') rotate(' + swimRotate + 'deg)';
 
       requestAnimationFrame(animateAngler);
     }
