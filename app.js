@@ -204,8 +204,12 @@
   // ========================================
   var anglerfish = document.querySelector('.anglerfish');
   if (anglerfish && !isTouchDevice) {
-    var anglerX = window.innerWidth * 0.5;
-    var anglerY = window.innerHeight + 150;
+    // Start from where the hero image is (emerges from the portal)
+    var heroImgRect = document.querySelector('.hero-image');
+    var anglerStartX = heroImgRect ? heroImgRect.getBoundingClientRect().left + heroImgRect.getBoundingClientRect().width / 2 : window.innerWidth * 0.7;
+    var anglerStartY = heroImgRect ? heroImgRect.getBoundingClientRect().top + heroImgRect.getBoundingClientRect().height / 2 : window.innerHeight * 0.5;
+    var anglerX = anglerStartX;
+    var anglerY = anglerStartY;
     var anglerTargetX = anglerX;
     var anglerTargetY = anglerY;
     var anglerFlipped = false;
@@ -1097,40 +1101,69 @@
             float alpha=abs(n)*8.0*edge;\n\
             gl_FragColor=vec4(1.0,1.0,1.0,clamp(alpha,0.0,0.25));\n\
           } else {\n\
-            // Dark mode: deep-sea bioluminescent scene\n\
-            vec3 deepBlue=vec3(0.02,0.04,0.08);\n\
-            vec3 midBlue=vec3(0.04,0.08,0.14);\n\
+            // Dark mode: deep-sea ecosystem\n\
+            vec3 deepBlue=vec3(0.01,0.02,0.06);\n\
+            vec3 midBlue=vec3(0.03,0.06,0.12);\n\
             \n\
-            // Water gradient\n\
-            vec3 bg=mix(midBlue,deepBlue,uv.y*0.8+snoise2(uv*2.0+t*0.1)*0.1);\n\
+            // Water gradient — darker at bottom\n\
+            vec3 bg=mix(midBlue,deepBlue,uv.y*0.9+snoise2(uv*1.5+t*0.05)*0.08);\n\
+            \n\
+            // Volumetric light rays from above\n\
+            float ray1=smoothstep(0.4,0.0,abs(uv.x-0.3-sin(t*0.2)*0.05))*(1.0-uv.y)*0.04;\n\
+            float ray2=smoothstep(0.3,0.0,abs(uv.x-0.7+cos(t*0.15)*0.04))*(1.0-uv.y)*0.03;\n\
+            bg+=vec3(0.05,0.12,0.18)*(ray1+ray2);\n\
             \n\
             // Light caustics from above\n\
-            float caustic1=snoise2(uv*6.0+vec2(t*0.5,t*0.3));\n\
-            float caustic2=snoise2(uv*8.0+vec2(-t*0.4,t*0.6));\n\
-            float caustics=max(0.0,caustic1*caustic2)*0.3*(1.0-uv.y);\n\
-            bg+=vec3(0.05,0.1,0.15)*caustics;\n\
+            float caustic1=snoise2(uv*6.0+vec2(t*0.4,t*0.25));\n\
+            float caustic2=snoise2(uv*9.0+vec2(-t*0.35,t*0.5));\n\
+            float caustics=max(0.0,caustic1*caustic2)*0.25*(1.0-uv.y)*(1.0-uv.y);\n\
+            bg+=vec3(0.04,0.1,0.14)*caustics;\n\
             \n\
-            // Bioluminescent particles\n\
-            float glow1=smoothstep(0.03,0.0,length(uv-vec2(0.3+sin(t*0.7)*0.1,0.4+cos(t*0.5)*0.1)));\n\
-            float glow2=smoothstep(0.02,0.0,length(uv-vec2(0.7+cos(t*0.4)*0.08,0.6+sin(t*0.8)*0.08)));\n\
-            float glow3=smoothstep(0.015,0.0,length(uv-vec2(0.5+sin(t*0.9)*0.12,0.3+cos(t*0.6)*0.05)));\n\
-            float glow4=smoothstep(0.025,0.0,length(uv-vec2(0.2+cos(t*0.3)*0.06,0.7+sin(t*1.1)*0.04)));\n\
+            // Jellyfish-like organisms (bell shape with trails)\n\
+            vec2 jelly1Pos=vec2(0.25+sin(t*0.3)*0.08,0.35+cos(t*0.4)*0.1+sin(t*0.7)*0.03);\n\
+            float jelly1=smoothstep(0.06,0.0,length((uv-jelly1Pos)*vec2(1.0,1.4)));\n\
+            float jelly1Trail=smoothstep(0.02,0.0,abs(uv.x-jelly1Pos.x))*smoothstep(jelly1Pos.y,jelly1Pos.y+0.15,uv.y)*0.5;\n\
+            bg+=vec3(0.3,0.15,0.6)*jelly1*0.4;\n\
+            bg+=vec3(0.2,0.1,0.4)*jelly1Trail*0.2;\n\
+            \n\
+            vec2 jelly2Pos=vec2(0.75+cos(t*0.25)*0.06,0.5+sin(t*0.35)*0.08);\n\
+            float jelly2=smoothstep(0.04,0.0,length((uv-jelly2Pos)*vec2(1.0,1.3)));\n\
+            bg+=vec3(0.1,0.4,0.5)*jelly2*0.3;\n\
+            \n\
+            // Bioluminescent organisms (different sizes, drift patterns)\n\
+            float glow1=smoothstep(0.025,0.0,length(uv-vec2(0.15+sin(t*0.6)*0.1,0.6+cos(t*0.4)*0.08)));\n\
+            float glow2=smoothstep(0.018,0.0,length(uv-vec2(0.6+cos(t*0.35)*0.12,0.25+sin(t*0.7)*0.06)));\n\
+            float glow3=smoothstep(0.012,0.0,length(uv-vec2(0.85+sin(t*0.8)*0.05,0.7+cos(t*0.55)*0.04)));\n\
+            float glow4=smoothstep(0.02,0.0,length(uv-vec2(0.4+cos(t*0.45)*0.07,0.8+sin(t*0.9)*0.03)));\n\
+            float glow5=smoothstep(0.015,0.0,length(uv-vec2(0.55+sin(t*1.1)*0.04,0.15+cos(t*0.5)*0.06)));\n\
+            float glow6=smoothstep(0.01,0.0,length(uv-vec2(0.9+cos(t*0.6)*0.03,0.4+sin(t*0.85)*0.05)));\n\
             \n\
             vec3 lureGold=vec3(0.831,0.627,0.353);\n\
-            vec3 biolum=vec3(0.2,0.6,0.8);\n\
-            bg+=lureGold*glow1*0.8;\n\
+            vec3 biolum=vec3(0.15,0.5,0.7);\n\
+            vec3 biolumWarm=vec3(0.6,0.4,0.2);\n\
+            bg+=lureGold*glow1*0.7;\n\
             bg+=biolum*glow2*0.5;\n\
             bg+=biolum*glow3*0.4;\n\
-            bg+=lureGold*glow4*0.3;\n\
+            bg+=biolumWarm*glow4*0.3;\n\
+            bg+=lureGold*glow5*0.35;\n\
+            bg+=biolum*glow6*0.25;\n\
             \n\
-            // Mouse interaction — light ripple\n\
-            float mouseGlow=smoothstep(0.3,0.0,mouseDist)*0.15;\n\
-            bg+=lureGold*mouseGlow;\n\
+            // Kelp/tendril silhouettes at edges\n\
+            float kelp1=smoothstep(0.02,0.0,abs(uv.x-0.05-sin(uv.y*8.0+t*0.8)*0.015))*smoothstep(0.3,0.8,uv.y);\n\
+            float kelp2=smoothstep(0.015,0.0,abs(uv.x-0.95+sin(uv.y*6.0+t*0.6)*0.012))*smoothstep(0.4,0.9,uv.y);\n\
+            bg=mix(bg,deepBlue*0.5,kelp1*0.6);\n\
+            bg=mix(bg,deepBlue*0.5,kelp2*0.5);\n\
             \n\
-            // Floating debris/plankton\n\
-            float debris=snoise2(uv*20.0+t*0.5);\n\
-            debris=smoothstep(0.7,0.8,debris)*0.08;\n\
-            bg+=vec3(0.3,0.5,0.6)*debris;\n\
+            // Mouse interaction — bioluminescent wake\n\
+            float mouseGlow=smoothstep(0.25,0.0,mouseDist)*0.2;\n\
+            float mouseRipple=sin(mouseDist*30.0-t*3.0)*smoothstep(0.3,0.1,mouseDist)*0.05;\n\
+            bg+=lureGold*(mouseGlow+max(0.0,mouseRipple));\n\
+            \n\
+            // Floating marine snow (tiny particles)\n\
+            float snow1=snoise2(uv*25.0+t*0.3);\n\
+            float snow2=snoise2(uv*35.0+vec2(t*0.4,-t*0.2));\n\
+            float marineSnow=smoothstep(0.75,0.82,snow1)*0.06+smoothstep(0.8,0.85,snow2)*0.04;\n\
+            bg+=vec3(0.3,0.5,0.6)*marineSnow;\n\
             \n\
             gl_FragColor=vec4(bg,1.0);\n\
           }\n\
