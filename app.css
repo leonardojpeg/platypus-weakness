@@ -554,8 +554,8 @@ body.dark .hero-image img {
 body.dark #hero-displacement {
   z-index: 3;
   opacity: 1;
-  border-radius: 4px;
-  background: #010208;
+  border-radius: 12px;
+  background: #0a1428;
 }
 
 @keyframes heroFlip {
