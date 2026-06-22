@@ -211,8 +211,12 @@
     var anglerFlipped = false;
     var anglerTime = 0;
     var anglerSpeed = 0;
-    var anglerIdleTime = 0;
     var anglerLastMoveTime = Date.now();
+    var anglerJawOpen = 0; // 0 = closed, 1 = fully open
+    var anglerDepth = 0.75; // opacity depth simulation
+
+    // Get jaw element for animation
+    var anglerJaw = anglerfish.querySelector('.angler-jaw');
 
     document.addEventListener('mousemove', function (e) {
       anglerTargetX = e.clientX;
@@ -224,43 +228,66 @@
       var prevX = anglerX;
       var prevY = anglerY;
 
-      // Distance to target
+      // Distance to target (cursor)
       var distX = anglerTargetX - anglerX;
       var distY = anglerTargetY - anglerY;
       var dist = Math.sqrt(distX * distX + distY * distY);
 
-      // Variable speed: slower when close (stalking), faster to catch up when far
-      var lerpSpeed = dist > 300 ? 0.008 : dist > 100 ? 0.012 : 0.006;
+      // Variable speed - predatory behavior:
+      // Far away: moderate pursuit | Mid-range: cautious stalk | Close: drift alongside
+      var lerpSpeed;
+      if (dist > 400) lerpSpeed = 0.006;
+      else if (dist > 200) lerpSpeed = 0.01;
+      else if (dist > 80) lerpSpeed = 0.005;
+      else lerpSpeed = 0.003;
 
       anglerX += distX * lerpSpeed;
       anglerY += distY * lerpSpeed;
-      anglerTime += 0.025;
+      anglerTime += 0.02;
 
-      // Calculate actual movement speed for effects
+      // Movement speed
       var dx = anglerX - prevX;
       var dy = anglerY - prevY;
       anglerSpeed = Math.sqrt(dx * dx + dy * dy);
 
-      // Idle detection (mouse stopped)
+      // Idle detection
       var timeSinceMove = Date.now() - anglerLastMoveTime;
-      var isIdle = timeSinceMove > 2000;
+      var isIdle = timeSinceMove > 2500;
+      var idleFactor = Math.min(1, timeSinceMove / 5000); // ramps up over 5s
 
-      // Swimming undulation — more pronounced when moving
-      var swimAmplitude = isIdle ? 6 : 3 + anglerSpeed * 0.5;
-      var swimFreq = isIdle ? 0.6 : 1.0;
-      var swimY = Math.sin(anglerTime * swimFreq) * swimAmplitude;
+      // Jaw opens when approaching cursor (dist < 120)
+      var jawTarget = dist < 120 ? Math.min(1, (120 - dist) / 80) : 0;
+      anglerJawOpen += (jawTarget - anglerJawOpen) * 0.04;
+      if (anglerJaw) {
+        var jawOffset = anglerJawOpen * 4;
+        anglerJaw.style.transform = 'translateY(' + jawOffset + 'px)';
+      }
 
-      // Body rotation follows movement direction with natural lag
-      var moveAngle = Math.atan2(dy, dx);
-      var swimRotate = Math.sin(anglerTime * 0.7) * (isIdle ? 3 : 1.5);
-      swimRotate += Math.sin(anglerTime * 1.3) * 0.5; // secondary oscillation
+      // Swimming undulation — multi-frequency for organic feel
+      var swimBase = Math.sin(anglerTime * 0.8) * (isIdle ? 7 : 3);
+      var swimSecondary = Math.sin(anglerTime * 1.6) * (isIdle ? 3 : 1);
+      var swimTertiary = Math.sin(anglerTime * 2.4) * 0.5;
+      var swimY = swimBase + swimSecondary + swimTertiary;
 
-      // Breathing scale effect
-      var breathScale = 1 + Math.sin(anglerTime * 0.4) * 0.02;
+      // Body rotation - follows path with organic lag
+      var swimRotate = Math.sin(anglerTime * 0.6) * (isIdle ? 4 : 2);
+      swimRotate += Math.sin(anglerTime * 1.1) * (isIdle ? 1.5 : 0.7);
+      // Add slight tilt toward movement direction
+      var moveTilt = Math.atan2(dy, Math.abs(dx) + 0.01) * (180 / Math.PI) * 0.08;
+      swimRotate += moveTilt;
 
-      // Flip to face cursor direction (with hysteresis to prevent jitter)
-      if (dx < -0.3) anglerFlipped = false;
-      if (dx > 0.3) anglerFlipped = true;
+      // Breathing scale — slower, more subtle
+      var breathScale = 1 + Math.sin(anglerTime * 0.35) * 0.015 + Math.sin(anglerTime * 0.7) * 0.008;
+
+      // Depth-based opacity (simulates swimming in/out of darkness)
+      var depthTarget = 0.75 + Math.sin(anglerTime * 0.15) * 0.1;
+      if (isIdle) depthTarget -= idleFactor * 0.15; // fades into darkness when idle
+      anglerDepth += (depthTarget - anglerDepth) * 0.01;
+      anglerfish.style.opacity = document.body.classList.contains('dark') ? anglerDepth : '0';
+
+      // Flip to face cursor direction (with wide hysteresis)
+      if (dx < -0.5) anglerFlipped = false;
+      if (dx > 0.5) anglerFlipped = true;
 
       var scaleX = anglerFlipped ? breathScale : -breathScale;
 
@@ -957,21 +984,58 @@
         }
       });
     }
+
+    // Blog detail page animations (mermaid diagrams, comparison grids, sections)
+    var postBody = document.querySelector('.post-body');
+    if (postBody) {
+      var postSections = postBody.querySelectorAll('h2, .mermaid-wrap, .comparison-grid, .impact-bar');
+      postSections.forEach(function (el) {
+        gsap.from(el, {
+          opacity: 0,
+          y: 30,
+          duration: 0.8,
+          ease: 'power2.out',
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+            toggleActions: 'play none none none'
+          }
+        });
+      });
+
+      // Paragraphs get a subtle fade
+      var postParas = postBody.querySelectorAll('p, ul');
+      postParas.forEach(function (el) {
+        gsap.from(el, {
+          opacity: 0,
+          y: 15,
+          duration: 0.6,
+          ease: 'power2.out',
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 92%',
+            toggleActions: 'play none none none'
+          }
+        });
+      });
+    }
   }
 
   // ========================================
-  // HERO IMAGE DISPLACEMENT SHADER
+  // HERO IMAGE DISPLACEMENT / DEEP-SEA SHADER
   // ========================================
   var dispCanvas = document.getElementById('hero-displacement');
   var heroImg = document.querySelector('.hero-image img');
   if (dispCanvas && heroImg && !isTouchDevice && typeof ogl !== 'undefined') {
-    // Wait for image to load, then create displacement effect
     function initDisplacement() {
       var parent = dispCanvas.parentElement;
       var dRenderer = new ogl.Renderer({
         canvas: dispCanvas,
         alpha: true,
         premultipliedAlpha: true,
+        antialias: false,
         dpr: Math.min(window.devicePixelRatio, 2)
       });
       var dGl = dRenderer.gl;
@@ -992,53 +1056,84 @@
         }\n\
       ';
 
+      // Shader that works as subtle overlay in light mode
+      // and as full deep-sea scene in dark mode
       var dFragment = '\n\
         precision highp float;\n\
         varying vec2 vUv;\n\
         uniform float uTime;\n\
         uniform vec2 uMouse;\n\
         uniform float uScroll;\n\
+        uniform float uDark;\n\
         \n\
-        vec4 permute(vec4 x) { return mod(((x*34.0)+1.0)*x, 289.0); }\n\
-        float snoise2(vec2 v) {\n\
-          const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);\n\
-          vec2 i = floor(v + dot(v, C.yy));\n\
-          vec2 x0 = v - i + dot(i, C.xx);\n\
-          vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);\n\
-          vec4 x12 = x0.xyxy + C.xxzz;\n\
-          x12.xy -= i1;\n\
-          i = mod(i, 289.0);\n\
-          vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));\n\
-          vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);\n\
-          m = m*m; m = m*m;\n\
-          vec3 x = 2.0 * fract(p * C.www) - 1.0;\n\
-          vec3 h = abs(x) - 0.5;\n\
-          vec3 ox = floor(x + 0.5);\n\
-          vec3 a0 = x - ox;\n\
-          m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);\n\
-          vec3 g;\n\
-          g.x = a0.x * x0.x + h.x * x0.y;\n\
-          g.yz = a0.yz * x12.xz + h.yz * x12.yw;\n\
-          return 130.0 * dot(m, g);\n\
+        vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x,289.0);}\n\
+        float snoise2(vec2 v){\n\
+          const vec4 C=vec4(0.211324865405187,0.366025403784439,-0.577350269189626,0.024390243902439);\n\
+          vec2 i=floor(v+dot(v,C.yy));vec2 x0=v-i+dot(i,C.xx);\n\
+          vec2 i1=(x0.x>x0.y)?vec2(1.0,0.0):vec2(0.0,1.0);\n\
+          vec4 x12=x0.xyxy+C.xxzz;x12.xy-=i1;i=mod(i,289.0);\n\
+          vec3 p=permute(permute(i.y+vec3(0.0,i1.y,1.0))+i.x+vec3(0.0,i1.x,1.0));\n\
+          vec3 m=max(0.5-vec3(dot(x0,x0),dot(x12.xy,x12.xy),dot(x12.zw,x12.zw)),0.0);\n\
+          m=m*m;m=m*m;\n\
+          vec3 x2=2.0*fract(p*C.www)-1.0;vec3 h=abs(x2)-0.5;\n\
+          vec3 ox=floor(x2+0.5);vec3 a0=x2-ox;\n\
+          m*=1.79284291400159-0.85373472095314*(a0*a0+h*h);\n\
+          vec3 g;g.x=a0.x*x0.x+h.x*x0.y;g.yz=a0.yz*x12.xz+h.yz*x12.yw;\n\
+          return 130.0*dot(m,g);\n\
         }\n\
         \n\
-        void main() {\n\
-          vec2 uv = vUv;\n\
-          float t = uTime * 0.3;\n\
+        void main(){\n\
+          vec2 uv=vUv;\n\
+          float t=uTime*0.3;\n\
+          float mouseDist=length(uv-uMouse);\n\
           \n\
-          float mouseDist = length(uv - uMouse);\n\
-          float mouseWave = smoothstep(0.5, 0.0, mouseDist) * 0.02;\n\
-          \n\
-          float n = snoise2(uv * 3.0 + t) * 0.008;\n\
-          n += mouseWave * sin(t * 5.0 + mouseDist * 20.0);\n\
-          n += uScroll * 0.003 * snoise2(uv * 5.0);\n\
-          \n\
-          float edge = smoothstep(0.0, 0.15, min(min(uv.x, 1.0-uv.x), min(uv.y, 1.0-uv.y)));\n\
-          float alpha = abs(n) * 8.0 * edge;\n\
-          alpha = clamp(alpha, 0.0, 0.25);\n\
-          \n\
-          vec3 col = vec3(1.0);\n\
-          gl_FragColor = vec4(col, alpha);\n\
+          if(uDark<0.5){\n\
+            // Light mode: subtle displacement overlay\n\
+            float mouseWave=smoothstep(0.5,0.0,mouseDist)*0.02;\n\
+            float n=snoise2(uv*3.0+t)*0.008;\n\
+            n+=mouseWave*sin(t*5.0+mouseDist*20.0);\n\
+            n+=uScroll*0.003*snoise2(uv*5.0);\n\
+            float edge=smoothstep(0.0,0.15,min(min(uv.x,1.0-uv.x),min(uv.y,1.0-uv.y)));\n\
+            float alpha=abs(n)*8.0*edge;\n\
+            gl_FragColor=vec4(1.0,1.0,1.0,clamp(alpha,0.0,0.25));\n\
+          } else {\n\
+            // Dark mode: deep-sea bioluminescent scene\n\
+            vec3 deepBlue=vec3(0.02,0.04,0.08);\n\
+            vec3 midBlue=vec3(0.04,0.08,0.14);\n\
+            \n\
+            // Water gradient\n\
+            vec3 bg=mix(midBlue,deepBlue,uv.y*0.8+snoise2(uv*2.0+t*0.1)*0.1);\n\
+            \n\
+            // Light caustics from above\n\
+            float caustic1=snoise2(uv*6.0+vec2(t*0.5,t*0.3));\n\
+            float caustic2=snoise2(uv*8.0+vec2(-t*0.4,t*0.6));\n\
+            float caustics=max(0.0,caustic1*caustic2)*0.3*(1.0-uv.y);\n\
+            bg+=vec3(0.05,0.1,0.15)*caustics;\n\
+            \n\
+            // Bioluminescent particles\n\
+            float glow1=smoothstep(0.03,0.0,length(uv-vec2(0.3+sin(t*0.7)*0.1,0.4+cos(t*0.5)*0.1)));\n\
+            float glow2=smoothstep(0.02,0.0,length(uv-vec2(0.7+cos(t*0.4)*0.08,0.6+sin(t*0.8)*0.08)));\n\
+            float glow3=smoothstep(0.015,0.0,length(uv-vec2(0.5+sin(t*0.9)*0.12,0.3+cos(t*0.6)*0.05)));\n\
+            float glow4=smoothstep(0.025,0.0,length(uv-vec2(0.2+cos(t*0.3)*0.06,0.7+sin(t*1.1)*0.04)));\n\
+            \n\
+            vec3 lureGold=vec3(0.831,0.627,0.353);\n\
+            vec3 biolum=vec3(0.2,0.6,0.8);\n\
+            bg+=lureGold*glow1*0.8;\n\
+            bg+=biolum*glow2*0.5;\n\
+            bg+=biolum*glow3*0.4;\n\
+            bg+=lureGold*glow4*0.3;\n\
+            \n\
+            // Mouse interaction — light ripple\n\
+            float mouseGlow=smoothstep(0.3,0.0,mouseDist)*0.15;\n\
+            bg+=lureGold*mouseGlow;\n\
+            \n\
+            // Floating debris/plankton\n\
+            float debris=snoise2(uv*20.0+t*0.5);\n\
+            debris=smoothstep(0.7,0.8,debris)*0.08;\n\
+            bg+=vec3(0.3,0.5,0.6)*debris;\n\
+            \n\
+            gl_FragColor=vec4(bg,1.0);\n\
+          }\n\
         }\n\
       ';
 
@@ -1049,7 +1144,8 @@
         uniforms: {
           uTime: { value: 0 },
           uMouse: { value: [0.5, 0.5] },
-          uScroll: { value: 0 }
+          uScroll: { value: 0 },
+          uDark: { value: document.body.classList.contains('dark') ? 1.0 : 0.0 }
         },
         transparent: true,
         depthTest: false,
@@ -1057,7 +1153,6 @@
       });
 
       var dMesh = new ogl.Mesh(dGl, { geometry: dGeometry, program: dProgram });
-
       var dMouseTarget = { x: 0.5, y: 0.5 };
       var dMouse = { x: 0.5, y: 0.5 };
 
@@ -1076,6 +1171,7 @@
         dProgram.uniforms.uTime.value = t * 0.001;
         dProgram.uniforms.uMouse.value = [dMouse.x, dMouse.y];
         dProgram.uniforms.uScroll.value = scrollNorm;
+        dProgram.uniforms.uDark.value = document.body.classList.contains('dark') ? 1.0 : 0.0;
 
         dRenderer.render({ scene: dMesh });
       }
